@@ -562,7 +562,7 @@ function renderTable(){
   const rows=visibleDeals();
   $("#tbody").innerHTML = rows.map((d,i)=>`
     <tr class="${d.stage==="closure"?"is-closed":""}">
-      <td class="idx">${d.stage==="closure"?"★":i+1}</td>
+      <td class="idx">${i+1}</td>
       <td class="proj" contenteditable data-id="${d.id}" data-f="project" data-ph="Project name">${esc(d.project)}</td>
       <td class="buyer" contenteditable data-id="${d.id}" data-f="buyer" data-ph="Buyer">${esc(d.buyer)}</td>
       <td><select data-id="${d.id}" data-f="stage" style="background:${SC[d.stage].color}">
