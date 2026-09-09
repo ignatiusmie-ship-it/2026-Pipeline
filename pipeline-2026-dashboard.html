@@ -86,13 +86,12 @@ button:focus-visible,[contenteditable]:focus-visible,select:focus-visible,input:
 button.primary{background:var(--ink);border-color:var(--ink);color:#fff}
 button.primary:hover{background:#1c2c45}
 button.danger:hover{border-color:var(--signal);color:var(--signal)}
-.search{
-  margin-left:auto;position:relative;
-}
+.search{margin-left:auto;position:relative}
 .search input{
-  font-family:inherit;font-size:12.5px;padding:7px 11px;width:210px;
-  border:1px solid var(--rule);background:var(--surface);border-radius:2px;color:var(--ink);
+  font-family:inherit;font-size:12px;padding:5px 10px;width:220px;
+  border:1px solid var(--rule);background:#FBFCFD;border-radius:2px;color:var(--ink);
 }
+.search input:focus{background:var(--surface);border-color:var(--ink-2)}
 .saved{font-size:11px;color:var(--muted);min-width:78px}
 
 /* ---------- pipeline rail ---------- */
@@ -139,13 +138,12 @@ button.danger:hover{border-color:var(--signal);color:var(--signal)}
 
 .panel{background:var(--surface);border:1px solid var(--rule)}
 .panel-head{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
   padding:11px 14px;border-bottom:1px solid var(--rule);
 }
 .panel-head h2{
   margin:0;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);
 }
-.panel-head .hint{font-size:11px;color:var(--muted);font-weight:400;letter-spacing:0;text-transform:none}
 
 /* ---------- table ---------- */
 .tscroll{overflow-x:auto}
@@ -189,7 +187,7 @@ tfoot td{
 }
 
 /* ---------- EA scoreboard ---------- */
-.ea{margin-bottom:22px}
+.ea{margin-bottom:0}
 .ea-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--rule)}
 .ea-cell{padding:12px 12px 10px;border-right:1px solid var(--rule-soft);text-align:center}
 .ea-cell:last-child{border-right:0}
@@ -256,7 +254,7 @@ tfoot td{
 }
 @media print{
   body{background:#fff;padding:0}
-  .toolbar,.rowdel,.drawer,.scrim,.ea-list h3 button,.ea-item .x{display:none!important}
+  .toolbar,.search,.rowdel,.drawer,.scrim,.ea-list h3 button,.ea-item .x{display:none!important}
   .masthead{background:#fff;color:var(--ink);border-bottom:3px solid var(--signal)}
     .panel,.rail{border-color:#bbb;break-inside:avoid}
 }
@@ -280,7 +278,6 @@ tfoot td{
     <button id="printBtn">Print</button>
     <button class="danger" id="resetBtn">Reset to original</button>
     <span class="saved" id="saved"></span>
-    <div class="search"><input id="q" type="search" placeholder="Filter deals, buyers, status…"></div>
   </div>
 
   <div class="linkbar" id="linkbar"><span class="dot"></span><span>Checking storage…</span></div>
@@ -291,7 +288,7 @@ tfoot td{
     <div class="panel">
       <div class="panel-head">
         <h2 contenteditable data-meta="registerTitle" data-ph="Heading">Deals</h2>
-        <span class="hint">Click a cell to edit · click a column heading to sort</span>
+        <div class="search"><input id="q" type="search" placeholder="Filter deals, buyers, status…"></div>
       </div>
       <div class="tscroll">
         <table>
@@ -318,10 +315,6 @@ tfoot td{
         <div class="panel-head"><h2>Engagement agreements</h2></div>
         <div class="ea-row" id="eaCounts"></div>
         <div id="eaLists"></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><h2>Stage mix</h2></div>
-        <div style="padding:14px" id="mix"></div>
       </div>
     </div>
   </div>
@@ -509,7 +502,7 @@ async function load(){
 }
 
 /* ---------- render ---------- */
-function render(){ renderHead(); renderRail(); renderTable(); renderEA(); renderMix(); }
+function render(){ renderHead(); renderRail(); renderTable(); renderEA(); }
 
 function renderHead(){
   ["title","accent","registerTitle"].forEach(k=>{
@@ -600,20 +593,6 @@ function renderEA(){
         <button class="x" data-eadel="${k}" data-i="${i}" aria-label="Remove">×</button>
       </div>`).join("") || `<div style="font-size:12px;color:var(--muted)">Nothing yet.</div>`}
     </div>`).join("");
-}
-
-function renderMix(){
-  const total=state.deals.length||1;
-  $("#mix").innerHTML = STAGES.map(s=>{
-    const n=state.deals.filter(d=>d.stage===s.id).length;
-    const pct=Math.round(n/total*100);
-    return `<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
-      <span style="width:96px;font-size:11.5px;color:var(--ink-2)">${esc(s.label)}</span>
-      <span style="flex:1;height:9px;background:var(--rule-soft);display:block">
-        <span style="display:block;height:9px;width:${pct}%;background:${s.color}"></span></span>
-      <b style="font-size:12px;font-variant-numeric:tabular-nums;width:18px;text-align:right">${n}</b>
-    </div>`;
-  }).join("") + `<p style="font-size:11.5px;color:var(--muted);margin:10px 0 0">Excludes the ${state.mandated} signed mandates held without a named counterparty.</p>`;
 }
 
 /* ---------- interactions ---------- */
