@@ -1,0 +1,168 @@
+{
+  "title": "2026",
+  "accent": "Pipeline",
+  "mandated": 14,
+  "deals": [
+    {
+      "id": "d1",
+      "project": "Topaz / TalentBurst",
+      "buyer": "Epitec / SB",
+      "stage": "closure",
+      "status": "Closed / June 2, 2026",
+      "start": "Oct 29, 2024",
+      "ev": "$18.5M",
+      "note": "SLED / Staffing",
+      "closed": true
+    },
+    {
+      "id": "d2",
+      "project": "Canvas / Media Lab",
+      "buyer": "Teamshares / PE",
+      "stage": "dd",
+      "status": "DD (4/8/26) / Q3 closure 2026",
+      "start": "Nov 4, 2025",
+      "ev": "$21.5M",
+      "note": "Target close Sep 30"
+    },
+    {
+      "id": "d3",
+      "project": "Orion / ObjectWin",
+      "buyer": "Care Career (SureStaff) / Holding Co.",
+      "stage": "dd",
+      "status": "DD / Q3 closure 2026",
+      "start": "Mar 11, 2026",
+      "ev": "$20M",
+      "note": ""
+    },
+    {
+      "id": "d4",
+      "project": "Platinum / Bayforce",
+      "buyer": "Civaris / PE",
+      "stage": "dd",
+      "status": "DD / Q4 closure 2026",
+      "start": "Aug 20, 2025",
+      "ev": "$31M",
+      "note": ""
+    },
+    {
+      "id": "d5",
+      "project": "Sirius / SGS Consulting",
+      "buyer": "Legion Holdings / Pioneers",
+      "stage": "dd",
+      "status": "DD / Q4 closure 2026",
+      "start": "—",
+      "ev": "",
+      "note": ""
+    },
+    {
+      "id": "d6",
+      "project": "Amber / Empyra",
+      "buyer": "Black Lake Capital / Tricorner",
+      "stage": "live",
+      "status": "Live / Q4 closure 2026",
+      "start": "Feb 12, 2026",
+      "ev": "$30M",
+      "note": ""
+    },
+    {
+      "id": "d7",
+      "project": "Crane / 85Sixty",
+      "buyer": "King & Partners / SB",
+      "stage": "live",
+      "status": "Live / Q4 closure 2026",
+      "start": "Mar 23, 2026",
+      "ev": "$15M",
+      "note": ""
+    },
+    {
+      "id": "d8",
+      "project": "Ensight / NITS",
+      "buyer": "IOI stage",
+      "stage": "live",
+      "status": "Live / Q4 closure 2026",
+      "start": "May 26, 2026",
+      "ev": "",
+      "note": ""
+    },
+    {
+      "id": "d9",
+      "project": "Summit / Nayamode",
+      "buyer": "MC stage",
+      "stage": "live",
+      "status": "Live / Q4 closure 2026",
+      "start": "Jun 24, 2026",
+      "ev": "",
+      "note": ""
+    },
+    {
+      "id": "d10",
+      "project": "Night Sky / Alcor",
+      "buyer": "IOI stage",
+      "stage": "live",
+      "status": "Live / Q4 closure 2026",
+      "start": "Jun 29, 2026",
+      "ev": "",
+      "note": ""
+    },
+    {
+      "id": "d11",
+      "project": "ThinkSys",
+      "buyer": "",
+      "stage": "book",
+      "status": "Book building",
+      "start": "",
+      "ev": "$25–30M",
+      "note": "EV range $25–30M"
+    },
+    {
+      "id": "d12",
+      "project": "H10 Capital",
+      "buyer": "",
+      "stage": "book",
+      "status": "Book building",
+      "start": "",
+      "ev": "",
+      "note": "Rev. $55M, EBITDA $11M"
+    },
+    {
+      "id": "d13",
+      "project": "Ascendo Resources",
+      "buyer": "",
+      "stage": "book",
+      "status": "On hold",
+      "start": "",
+      "ev": "",
+      "note": ""
+    },
+    {
+      "id": "d14",
+      "project": "Watson / Gold Group",
+      "buyer": "",
+      "stage": "passive",
+      "status": "Passive",
+      "start": "",
+      "ev": "",
+      "note": ""
+    }
+  ],
+  "ea": {
+    "won": [
+      "ThinkSys / SEP",
+      "H10 Capital / SEP",
+      "SGS Consulting / Q1",
+      "Nayamode / Q1"
+    ],
+    "sent": [
+      "ProcessQ / Sep mandate",
+      "TalentBurst (Healthcare) / Sep mandate",
+      "West Cary Group / Sep mandate",
+      "Mlogica / Oct mandate",
+      "Arisant / 2027",
+      "Invoke"
+    ],
+    "lost": [
+      "Contiem",
+      "VSO"
+    ]
+  }
+}
