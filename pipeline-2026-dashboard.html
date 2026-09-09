@@ -235,6 +235,21 @@ tfoot td{
 .scrim{position:fixed;inset:0;background:rgba(15,27,46,.28);z-index:30;display:none}
 .scrim.on{display:block}
 
+.ro .toolbar,.ro .linkbar,.ro .footnote{display:none}
+.ro .panel-head{padding-top:13px;padding-bottom:13px}
+.chip[draggable="true"]{cursor:grab}
+.idx[draggable="true"]{cursor:grab}
+.ea-item .dot[draggable="true"]{cursor:grab;width:7px;height:7px}
+.dragging{opacity:.35}
+.stage-body.drop-in{background:#F1F4F8;outline:2px dashed var(--rule);outline-offset:-4px}
+.ea-list.drop-in{background:#F1F4F8}
+.chip.drop-before{box-shadow:0 -2px 0 var(--signal)}
+.ea-item.drop-before{box-shadow:0 -2px 0 var(--signal)}
+tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
+.pill{
+  display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:#fff;padding:3px 7px;border-radius:2px;white-space:nowrap;
+}
 [contenteditable]{outline:none;border-radius:2px}
 [contenteditable]:hover{box-shadow:inset 0 -1px 0 var(--rule)}
 [contenteditable]:focus{background:#FFF8DC;box-shadow:inset 0 -1px 0 var(--signal)}
@@ -379,6 +394,10 @@ const SEED = {
 };
 
 const KEY="pipeline-h1h2-2026";
+
+/* Set to true to produce a share copy: hides all controls and disables editing. */
+const READONLY = false;
+const ED = READONLY ? "" : "contenteditable";
 let state = JSON.parse(JSON.stringify(SEED));
 let sortBy=null, sortDir=1, query="", editing=null;
 
@@ -437,6 +456,7 @@ async function writeFile(){
 
 let saveTimer;
 function save(){
+  if(READONLY) return;
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
     try{ await store.set(JSON.stringify(state)); flash("Saved"); }
@@ -493,6 +513,12 @@ async function initLink(){
 }
 
 async function load(){
+  if(READONLY){
+    document.body.classList.add("ro");
+    document.querySelectorAll("[contenteditable]").forEach(el=>el.removeAttribute("contenteditable"));
+    render();
+    return;                      /* seed data only — no stored edits, no file link */
+  }
   try{
     const v=await store.get();
     if(v){ const p=JSON.parse(v); if(p&&p.deals) state=p; }
@@ -517,7 +543,7 @@ function renderRail(){
     let body;
     if(s.id==="mandated"){
       body = `<div class="bulk">
-        <input id="mandCount" type="number" min="0" value="${state.mandated}" aria-label="Mandated projects count">
+        <input id="mandCount" type="number" min="0" value="${state.mandated}" ${READONLY?"readonly":""} aria-label="Mandated projects count">
         <small>signed mandates in market</small>
       </div>` + items.map(chip).join("");
     } else {
@@ -528,12 +554,12 @@ function renderRail(){
       <header class="stage-cap" style="background:${s.color}">
         <span>${esc(s.label)}</span><span class="n">${s.id==="mandated"?state.mandated:items.length}</span>
       </header>
-      <div class="stage-body">${body}</div>
+      <div class="stage-body" data-stage="${s.id}">${body}</div>
     </section>`;
   }).join("");
 
   function chip(d){
-    return `<button class="chip" data-open="${d.id}" style="--c:${SC[d.stage].color}">
+    return `<button class="chip" data-open="${d.id}" ${READONLY?"disabled style=cursor:default":'draggable="true"'} data-drag-deal="${d.id}" style="--c:${SC[d.stage].color}">
       <span class="nm">${esc(d.project)||"Untitled"}</span>
       <span class="meta">${esc(d.note || d.buyer || d.status || "")}</span>
     </button>`;
@@ -560,18 +586,21 @@ function visibleDeals(){
 
 function renderTable(){
   const rows=visibleDeals();
+  const canDrag=!READONLY && !sortBy && !query;
   $("#tbody").innerHTML = rows.map((d,i)=>`
-    <tr class="${d.stage==="closure"?"is-closed":""}">
-      <td class="idx">${i+1}</td>
-      <td class="proj" contenteditable data-id="${d.id}" data-f="project" data-ph="Project name">${esc(d.project)}</td>
-      <td class="buyer" contenteditable data-id="${d.id}" data-f="buyer" data-ph="Buyer">${esc(d.buyer)}</td>
-      <td><select data-id="${d.id}" data-f="stage" style="background:${SC[d.stage].color}">
-        ${STAGES.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${esc(s.label)}</option>`).join("")}
-      </select></td>
-      <td class="status" contenteditable data-id="${d.id}" data-f="status" data-ph="Status">${esc(d.status)}</td>
-      <td class="dt" contenteditable data-id="${d.id}" data-f="start" data-ph="—">${esc(d.start)}</td>
-      <td class="ev" contenteditable data-id="${d.id}" data-f="ev" data-ph="—">${esc(d.ev)}</td>
-      <td><button class="rowdel" data-del="${d.id}" title="Delete deal" aria-label="Delete deal">×</button></td>
+    <tr class="${d.stage==="closure"?"is-closed":""}" data-row="${d.id}">
+      <td class="idx" ${canDrag?`draggable="true" data-drag-row="${d.id}"`:""} title="${canDrag?"Drag to reorder":""}">${i+1}</td>
+      <td class="proj" ${ED} data-id="${d.id}" data-f="project" data-ph="Project name">${esc(d.project)}</td>
+      <td class="buyer" ${ED} data-id="${d.id}" data-f="buyer" data-ph="Buyer">${esc(d.buyer)}</td>
+      <td>${READONLY
+        ? `<span class="pill" style="background:${SC[d.stage].color}">${esc(SC[d.stage].label)}</span>`
+        : `<select data-id="${d.id}" data-f="stage" style="background:${SC[d.stage].color}">
+             ${STAGES.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${esc(s.label)}</option>`).join("")}
+           </select>`}</td>
+      <td class="status" ${ED} data-id="${d.id}" data-f="status" data-ph="Status">${esc(d.status)}</td>
+      <td class="dt" ${ED} data-id="${d.id}" data-f="start" data-ph="—">${esc(d.start)}</td>
+      <td class="ev" ${ED} data-id="${d.id}" data-f="ev" data-ph="—">${esc(d.ev)}</td>
+      <td>${READONLY?"":`<button class="rowdel" data-del="${d.id}" title="Delete deal" aria-label="Delete deal">×</button>`}</td>
     </tr>`).join("") || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">No deals match “${esc(query)}”. Clear the filter to see all ${state.deals.length}.</td></tr>`;
 
   $("#tfoot").innerHTML = rows.length?`<tr><td></td><td colspan="7">${rows.length} deal${rows.length>1?"s":""} shown${query?" (filtered)":""}</td></tr>`:"";
@@ -585,12 +614,12 @@ function renderEA(){
   $("#eaCounts").innerHTML = sets.map(([k,l,c])=>
     `<div class="ea-cell"><b style="color:${c}">${state.ea[k].length}</b><small>${esc(l.replace(" / mandate pipeline",""))}</small></div>`).join("");
   $("#eaLists").innerHTML = sets.map(([k,l,c])=>`
-    <div class="ea-list">
-      <h3>${esc(l)} <button data-eaadd="${k}" title="Add item">+</button></h3>
-      ${state.ea[k].map((v,i)=>`<div class="ea-item">
-        <span class="dot" style="background:${c}"></span>
-        <span contenteditable data-ea="${k}" data-i="${i}" data-ph="Name">${esc(v)}</span>
-        <button class="x" data-eadel="${k}" data-i="${i}" aria-label="Remove">×</button>
+    <div class="ea-list" data-ea-list="${k}">
+      <h3>${esc(l)} ${READONLY?"":`<button data-eaadd="${k}" title="Add item">+</button>`}</h3>
+      ${state.ea[k].map((v,i)=>`<div class="ea-item" data-ea-slot="${k}" data-i="${i}">
+        <span class="dot" style="background:${c}" ${READONLY?"":`draggable="true" data-drag-ea="${k}" data-i="${i}" title="Drag to move"`}></span>
+        <span ${ED} data-ea="${k}" data-i="${i}" data-ph="Name">${esc(v)}</span>
+        ${READONLY?"":`<button class="x" data-eadel="${k}" data-i="${i}" aria-label="Remove">×</button>`}
       </div>`).join("") || `<div style="font-size:12px;color:var(--muted)">Nothing yet.</div>`}
     </div>`).join("");
 }
@@ -627,6 +656,7 @@ document.addEventListener("change",e=>{
 document.addEventListener("click",e=>{
   const t=e.target.closest("[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort]");
   if(!t) return;
+  if(READONLY){ if(t.dataset.sort){ if(sortBy===t.dataset.sort) sortDir*=-1; else {sortBy=t.dataset.sort;sortDir=1;} renderTable(); } return; }
   if(t.dataset.open) openDrawer(t.dataset.open);
   else if(t.dataset.del){
     const d=state.deals.find(x=>x.id===t.dataset.del);
@@ -722,6 +752,95 @@ $("#resetBtn").addEventListener("click",()=>{
   if(confirm("Reset every field back to the original pipeline? Your edits will be lost.")){
     state=JSON.parse(JSON.stringify(SEED)); save(); render(); flash("Reset");
   }
+});
+
+/* ---------- drag & drop ---------- */
+let drag=null;
+
+function clearMarks(){
+  document.querySelectorAll(".drop-in,.drop-before").forEach(el=>el.classList.remove("drop-in","drop-before"));
+}
+
+/* deals live in one ordered array; moving = splice out, splice back in */
+function moveDeal(id,{beforeId,stage}={}){
+  const i=state.deals.findIndex(d=>d.id===id); if(i<0) return;
+  const [d]=state.deals.splice(i,1);
+  if(stage) d.stage=stage;
+  if(beforeId && beforeId!==id){
+    const j=state.deals.findIndex(x=>x.id===beforeId);
+    state.deals.splice(j<0?state.deals.length:j,0,d);
+  }else if(stage){
+    /* dropped on empty space in a column — sit after the last deal already there */
+    let last=-1;
+    state.deals.forEach((x,k)=>{ if(x.stage===stage) last=k; });
+    state.deals.splice(last+1,0,d);
+  }else{
+    state.deals.push(d);
+  }
+}
+
+function moveEA(from,i,to,j){
+  const [v]=state.ea[from].splice(i,1);
+  if(j==null){ state.ea[to].push(v); return; }
+  if(from===to && i<j) j--;
+  state.ea[to].splice(j,0,v);
+}
+
+function target(e){
+  if(!drag) return null;
+  if(drag.kind==="deal"){
+    const chip=e.target.closest(".chip[data-drag-deal]");
+    if(chip) return {el:chip,mark:"drop-before",beforeId:chip.dataset.dragDeal,stage:chip.closest("[data-stage]").dataset.stage};
+    const col=e.target.closest("[data-stage]");
+    if(col) return {el:col,mark:"drop-in",stage:col.dataset.stage};
+    const row=e.target.closest("tr[data-row]");
+    if(row && drag.from==="row") return {el:row,mark:"drop-before",beforeId:row.dataset.row};
+  }
+  if(drag.kind==="ea"){
+    const item=e.target.closest("[data-ea-slot]");
+    if(item) return {el:item,mark:"drop-before",list:item.dataset.eaSlot,index:+item.dataset.i};
+    const list=e.target.closest("[data-ea-list]");
+    if(list) return {el:list,mark:"drop-in",list:list.dataset.eaList,index:null};
+  }
+  return null;
+}
+
+document.addEventListener("dragstart",e=>{
+  if(READONLY) return;
+  const chip=e.target.closest("[data-drag-deal]");
+  const row=e.target.closest("[data-drag-row]");
+  const ea=e.target.closest("[data-drag-ea]");
+  if(chip)      drag={kind:"deal",id:chip.dataset.dragDeal,from:"chip"};
+  else if(row)  drag={kind:"deal",id:row.dataset.dragRow,from:"row"};
+  else if(ea)   drag={kind:"ea",list:ea.dataset.dragEa,index:+ea.dataset.i};
+  else return;
+  e.dataTransfer.effectAllowed="move";
+  e.dataTransfer.setData("text/plain",drag.id||"ea");   /* Firefox needs a payload */
+  (row?row.closest("tr"):(ea?ea.closest(".ea-item"):chip)).classList.add("dragging");
+});
+
+document.addEventListener("dragover",e=>{
+  const t=target(e); if(!t) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect="move";
+  if(!t.el.classList.contains(t.mark)){ clearMarks(); t.el.classList.add(t.mark); }
+});
+
+document.addEventListener("dragleave",e=>{
+  if(e.target.classList && e.target.classList.contains("drop-in")) e.target.classList.remove("drop-in");
+});
+
+document.addEventListener("drop",e=>{
+  const t=target(e); if(!t) return;
+  e.preventDefault();
+  if(drag.kind==="deal") moveDeal(drag.id,{beforeId:t.beforeId,stage:t.stage});
+  else moveEA(drag.list,drag.index,t.list,t.index);
+  drag=null; clearMarks(); save(); render();
+});
+
+document.addEventListener("dragend",()=>{
+  drag=null; clearMarks();
+  document.querySelectorAll(".dragging").forEach(el=>el.classList.remove("dragging"));
 });
 
 load();
