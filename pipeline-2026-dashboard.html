@@ -86,12 +86,6 @@ button:focus-visible,[contenteditable]:focus-visible,select:focus-visible,input:
 button.primary{background:var(--ink);border-color:var(--ink);color:#fff}
 button.primary:hover{background:#1c2c45}
 button.danger:hover{border-color:var(--signal);color:var(--signal)}
-.search{margin-left:auto;position:relative}
-.search input{
-  font-family:inherit;font-size:12px;padding:5px 10px;width:220px;
-  border:1px solid var(--rule);background:#FBFCFD;border-radius:2px;color:var(--ink);
-}
-.search input:focus{background:var(--surface);border-color:var(--ink-2)}
 .saved{font-size:11px;color:var(--muted);min-width:78px}
 
 /* ---------- pipeline rail ---------- */
@@ -246,6 +240,17 @@ tfoot td{
 .chip.drop-before{box-shadow:0 -2px 0 var(--signal)}
 .ea-item.drop-before{box-shadow:0 -2px 0 var(--signal)}
 tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
+.stage-cap[data-filter]{cursor:pointer;user-select:none}
+.stage.dim{opacity:.45}
+.fchip{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);
+  background:#F1F4F8;border:1px solid var(--rule);padding:3px 4px 3px 8px;border-radius:2px;
+}
+.fchip:empty{display:none}
+.fchip .sw{width:8px;height:8px;border-radius:50%}
+.fchip button{border:0;background:none;padding:0 4px;font-size:14px;line-height:1;color:var(--muted);cursor:pointer}
+.fchip button:hover{color:var(--signal)}
 .pill{
   display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;color:#fff;padding:3px 7px;border-radius:2px;white-space:nowrap;
@@ -263,13 +268,11 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 }
 @media(max-width:620px){
   .rail{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .search{margin-left:0;width:100%}
-  .search input{width:100%}
-  .drawer{width:100%}
+      .drawer{width:100%}
 }
 @media print{
   body{background:#fff;padding:0}
-  .toolbar,.search,.rowdel,.drawer,.scrim,.ea-list h3 button,.ea-item .x{display:none!important}
+  .toolbar,.rowdel,.drawer,.scrim,.ea-list h3 button,.ea-item .x{display:none!important}
   .masthead{background:#fff;color:var(--ink);border-bottom:3px solid var(--signal)}
     .panel,.rail{border-color:#bbb;break-inside:avoid}
 }
@@ -303,7 +306,7 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
     <div class="panel">
       <div class="panel-head">
         <h2 contenteditable data-meta="registerTitle" data-ph="Heading">Deals</h2>
-        <div class="search"><input id="q" type="search" placeholder="Filter deals, buyers, status…"></div>
+        <span class="fchip" id="fchip"></span>
       </div>
       <div class="tscroll">
         <table>
@@ -399,7 +402,7 @@ const KEY="pipeline-h1h2-2026";
 const READONLY = false;
 const ED = READONLY ? "" : "contenteditable";
 let state = JSON.parse(JSON.stringify(SEED));
-let sortBy=null, sortDir=1, query="", editing=null;
+let sortBy=null, sortDir=1, stageFilter=null, editing=null;
 
 const $ = s=>document.querySelector(s);
 const esc = s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -550,8 +553,9 @@ function renderRail(){
       body = items.length ? items.map(chip).join("")
         : `<div style="font-size:12px;color:var(--muted);padding:4px 0">Nothing here yet. Add a deal and set its stage to ${esc(s.label.toLowerCase())}.</div>`;
     }
-    return `<section class="stage">
-      <header class="stage-cap" style="background:${s.color}">
+    return `<section class="stage${stageFilter&&stageFilter!==s.id?" dim":""}">
+      <header class="stage-cap" style="background:${s.color}" data-filter="${s.id}"
+        title="${stageFilter===s.id?"Show all deals":"Show only "+s.label+" deals"}">
         <span>${esc(s.label)}</span><span class="n">${s.id==="mandated"?state.mandated:items.length}</span>
       </header>
       <div class="stage-body" data-stage="${s.id}">${body}</div>
@@ -569,10 +573,7 @@ function renderRail(){
 }
 
 function visibleDeals(){
-  let rows = state.deals.filter(d=>{
-    if(!query) return true;
-    return [d.project,d.buyer,d.status,d.note,SC[d.stage].label].join(" ").toLowerCase().includes(query);
-  });
+  let rows = stageFilter ? state.deals.filter(d=>d.stage===stageFilter) : [...state.deals];
   if(sortBy){
     rows=[...rows].sort((a,b)=>{
       if(sortBy==="ev") return (num(a.ev)-num(b.ev))*sortDir;
@@ -586,7 +587,7 @@ function visibleDeals(){
 
 function renderTable(){
   const rows=visibleDeals();
-  const canDrag=!READONLY && !sortBy && !query;
+  const canDrag=!READONLY && !sortBy;
   $("#tbody").innerHTML = rows.map((d,i)=>`
     <tr class="${d.stage==="closure"?"is-closed":""}" data-row="${d.id}">
       <td class="idx" ${canDrag?`draggable="true" data-drag-row="${d.id}"`:""} title="${canDrag?"Drag to reorder":""}">${i+1}</td>
@@ -601,9 +602,13 @@ function renderTable(){
       <td class="dt" ${ED} data-id="${d.id}" data-f="start" data-ph="—">${esc(d.start)}</td>
       <td class="ev" ${ED} data-id="${d.id}" data-f="ev" data-ph="—">${esc(d.ev)}</td>
       <td>${READONLY?"":`<button class="rowdel" data-del="${d.id}" title="Delete deal" aria-label="Delete deal">×</button>`}</td>
-    </tr>`).join("") || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">No deals match “${esc(query)}”. Clear the filter to see all ${state.deals.length}.</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">No deals in ${esc(SC[stageFilter].label)}. Click the stage header again to see all ${state.deals.length}.</td></tr>`;
 
-  $("#tfoot").innerHTML = rows.length?`<tr><td></td><td colspan="7">${rows.length} deal${rows.length>1?"s":""} shown${query?" (filtered)":""}</td></tr>`:"";
+  $("#tfoot").innerHTML = rows.length?`<tr><td></td><td colspan="7">${rows.length} deal${rows.length>1?"s":""} shown${stageFilter?" of "+state.deals.length:""}</td></tr>`:"";
+  const fc=$("#fchip");
+  fc.innerHTML = stageFilter
+    ? `<span class="sw" style="background:${SC[stageFilter].color}"></span>${esc(SC[stageFilter].label)} only <button id="clearFilter" title="Clear">×</button>`
+    : "";
   document.querySelectorAll("th[data-sort]").forEach(th=>{
     th.querySelector(".arrow").textContent = th.dataset.sort===sortBy ? (sortDir>0?"▲":"▼") : "";
   });
@@ -654,8 +659,12 @@ document.addEventListener("change",e=>{
 });
 
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort]");
+  const t=e.target.closest("[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort],[data-filter],#clearFilter");
   if(!t) return;
+  if(t.id==="clearFilter"||t.dataset.filter){
+    stageFilter = t.id==="clearFilter" ? null : (stageFilter===t.dataset.filter?null:t.dataset.filter);
+    render(); return;
+  }
   if(READONLY){ if(t.dataset.sort){ if(sortBy===t.dataset.sort) sortDir*=-1; else {sortBy=t.dataset.sort;sortDir=1;} renderTable(); } return; }
   if(t.dataset.open) openDrawer(t.dataset.open);
   else if(t.dataset.del){
@@ -670,8 +679,6 @@ document.addEventListener("click",e=>{
     renderTable();
   }
 });
-
-$("#q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();renderTable();});
 
 $("#addDeal").addEventListener("click",()=>{
   const d={id:"d"+Date.now(),project:"",buyer:"",stage:"live",status:"",start:"",ev:"",note:""};
