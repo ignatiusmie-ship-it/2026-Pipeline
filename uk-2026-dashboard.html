@@ -1,0 +1,878 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UK — H1–H2 2026 Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --canvas:#E7EAEF;
+  --surface:#FFFFFF;
+  --ink:#0F1B2E;
+  --ink-2:#33435C;
+  --muted:#6B7A91;
+  --rule:#D2D8E1;
+  --rule-soft:#E5E9EF;
+  --signal:#1D4ED8;
+
+  --s-closure:#12994B;
+  --s-mandated:#6E7A8C;
+  --s-dd:#E3A400;
+  --s-live:#6B2FA0;
+  --s-book:#0E7490;
+  --s-passive:#9AA7B8;
+
+  --won:#12994B;
+  --lost:#D22630;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--canvas);
+  color:var(--ink);
+  font-family:"Lato",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:14px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  padding:0 0 64px;
+}
+.wrap{max-width:1400px;margin:0 auto;padding:0 22px}
+
+/* ---------- masthead ---------- */
+.masthead{
+  background:var(--ink);
+  color:#fff;
+  border-bottom:5px solid var(--signal);
+  padding:22px 0 20px;
+  margin-bottom:22px;
+}
+.mast-grid{display:flex;flex-wrap:wrap;align-items:flex-end;gap:28px;justify-content:space-between}
+.title{
+  font-size:clamp(28px,4.4vw,46px);
+  font-weight:900;
+  letter-spacing:-.015em;
+  line-height:.95;
+  margin:0;
+}
+.unit{
+  display:inline-block;font-size:11px;font-weight:900;letter-spacing:.16em;
+  text-transform:uppercase;background:var(--signal);color:#fff;
+  padding:3px 10px;margin-bottom:10px;border-radius:2px;
+}
+.title span.accent{color:var(--signal)}
+.title [contenteditable]:hover{box-shadow:inset 0 -2px 0 rgba(255,255,255,.35)}
+.title [contenteditable]:focus{background:rgba(255,255,255,.1);box-shadow:inset 0 -2px 0 var(--signal)}
+
+/* ---------- toolbar ---------- */
+.toolbar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  margin-bottom:10px;
+}
+.linkbar{
+  display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--rule);
+  padding:8px 12px;margin:0 0 22px;
+}
+.linkbar .dot{width:7px;height:7px;border-radius:50%;background:var(--s-mandated);flex:none}
+.linkbar.on .dot{background:var(--s-closure)}
+.linkbar b{color:var(--ink);font-weight:700}
+.linkbar button{margin-left:auto;padding:4px 10px;font-size:11.5px}
+button{
+  font-family:inherit;font-size:12.5px;font-weight:700;
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);
+  padding:7px 13px;border-radius:2px;cursor:pointer;
+}
+button:hover{border-color:var(--ink-2);color:var(--ink)}
+button:focus-visible,[contenteditable]:focus-visible,select:focus-visible,input:focus-visible{
+  outline:2px solid var(--signal);outline-offset:1px;
+}
+button.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+button.primary:hover{background:#1c2c45}
+button.danger:hover{border-color:var(--signal);color:var(--signal)}
+.saved{font-size:11px;color:var(--muted);min-width:78px}
+
+/* ---------- pipeline rail ---------- */
+.rail{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:2px;
+  background:var(--rule-soft);
+  border:1px solid var(--rule);
+  margin-bottom:26px;
+}
+.stage{background:var(--surface);display:flex;flex-direction:column;min-height:210px}
+.stage-cap{
+  padding:7px 12px;color:#fff;font-size:11px;font-weight:700;
+  letter-spacing:.085em;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.stage-cap .n{font-size:15px;font-weight:900;letter-spacing:0}
+.stage-body{padding:12px 12px 14px;flex:1;display:flex;flex-direction:column;gap:7px}
+.chip{
+  border-left:3px solid var(--c);
+  padding:5px 0 5px 9px;
+  cursor:pointer;
+  background:none;border-top:0;border-right:0;border-bottom:0;
+  text-align:left;width:100%;
+}
+.chip:hover{background:#F4F6F9}
+.chip .nm{
+  font-family:"Lato",Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;color:var(--ink);
+  display:block;line-height:1.25;
+}
+.chip .meta{font-size:10.5px;color:var(--muted);display:block;margin-top:2px}
+.bulk{padding:14px 12px;text-align:center}
+.bulk b{display:block;font-size:44px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.bulk small{font-size:11px;color:var(--muted)}
+.bulk input{
+  font-family:inherit;font-size:40px;font-weight:900;width:100%;text-align:center;
+  border:0;border-bottom:1px dashed var(--rule);background:none;color:var(--ink);
+  letter-spacing:-.02em;padding:0;
+}
+
+/* ---------- layout ---------- */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+
+.panel{background:var(--surface);border:1px solid var(--rule)}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:11px 14px;border-bottom:1px solid var(--rule);
+}
+.panel-head h2{
+  margin:0;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);
+}
+
+/* ---------- table ---------- */
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:840px}
+th{
+  background:var(--signal);color:#fff;text-align:left;
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  padding:9px 10px;white-space:nowrap;cursor:pointer;user-select:none;
+}
+th:hover{background:#b91d26}
+th .arrow{opacity:.55;font-size:9px}
+td{
+  padding:8px 10px;border-bottom:1px solid var(--rule-soft);
+  font-size:13.5px;vertical-align:top;
+}
+tbody tr:hover{background:#F6F8FA}
+tr.is-closed td{background:#EAF7EF}
+tr.is-closed:hover td{background:#E1F2E8}
+.idx{
+  font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px;font-weight:700;
+  width:34px;text-align:right;
+}
+.proj{font-size:14px;font-weight:700;line-height:1.3;min-width:150px}
+.ev{font-variant-numeric:tabular-nums;font-weight:700;text-align:right;white-space:nowrap}
+.dt{white-space:nowrap;font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.buyer{font-size:13px;color:var(--ink-2);min-width:150px}
+.status{min-width:170px;font-size:12.5px}
+td select{
+  font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border:0;border-radius:2px;padding:3px 5px;color:#fff;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+}
+.rowdel{
+  border:0;background:none;color:var(--rule);font-size:15px;padding:0 4px;cursor:pointer;line-height:1;
+}
+tr:hover .rowdel{color:var(--muted)}
+.rowdel:hover{color:var(--signal)}
+tfoot td{
+  border-top:2px solid var(--ink);border-bottom:0;font-weight:700;font-size:13px;
+  background:#F4F6F9;
+}
+
+/* ---------- EA scoreboard ---------- */
+.ea{margin-bottom:0}
+.ea-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--rule)}
+.ea-cell{padding:12px 12px 10px;border-right:1px solid var(--rule-soft);text-align:center}
+.ea-cell:last-child{border-right:0}
+.ea-cell b{display:block;font-size:30px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.ea-cell small{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.ea-list{padding:10px 12px 12px}
+.ea-list h3{
+  margin:0 0 6px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;display:flex;justify-content:space-between;align-items:center;
+}
+.ea-list h3 button{padding:1px 6px;font-size:15px;line-height:1.1;color:var(--muted)}
+.ea-item{
+  display:flex;align-items:baseline;gap:6px;padding:3px 0;
+  border-bottom:1px dotted var(--rule-soft);
+}
+.ea-item:last-child{border-bottom:0}
+.ea-item .dot{width:5px;height:5px;border-radius:50%;flex:none;transform:translateY(-2px)}
+.ea-item span[contenteditable]{
+  font-size:13.5px;flex:1;line-height:1.35;
+}
+.ea-item .x{border:0;background:none;color:var(--rule);cursor:pointer;font-size:13px;padding:0 2px}
+.ea-item:hover .x{color:var(--muted)}
+.ea-item .x:hover{color:var(--signal)}
+.ea-list + .ea-list{border-top:1px solid var(--rule-soft)}
+
+/* ---------- editor drawer ---------- */
+.drawer{
+  position:fixed;top:0;right:0;height:100%;width:340px;background:var(--surface);
+  border-left:1px solid var(--rule);box-shadow:-18px 0 44px rgba(15,27,46,.16);
+  padding:20px;overflow-y:auto;z-index:40;
+  transform:translateX(102%);transition:transform .22s ease;
+}
+.drawer.open{transform:none}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.drawer h2{margin:0 0 2px;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.drawer .kicker{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:16px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+.field input,.field select,.field textarea{
+  width:100%;font-family:inherit;font-size:13.5px;padding:7px 9px;
+  border:1px solid var(--rule);background:#FBFCFD;border-radius:2px;color:var(--ink);
+}
+.field textarea{min-height:62px;resize:vertical}
+.drawer-actions{display:flex;gap:8px;margin-top:18px}
+.scrim{position:fixed;inset:0;background:rgba(15,27,46,.28);z-index:30;display:none}
+.scrim.on{display:block}
+
+.ro .toolbar,.ro .linkbar,.ro .footnote{display:none}
+.ro .panel-head{padding-top:13px;padding-bottom:13px}
+.chip[draggable="true"]{cursor:grab}
+.idx[draggable="true"]{cursor:grab}
+.ea-item .dot[draggable="true"]{cursor:grab;width:7px;height:7px}
+.dragging{opacity:.35}
+.stage-body.drop-in{background:#F1F4F8;outline:2px dashed var(--rule);outline-offset:-4px}
+.ea-list.drop-in{background:#F1F4F8}
+.chip.drop-before{box-shadow:0 -2px 0 var(--signal)}
+.ea-item.drop-before{box-shadow:0 -2px 0 var(--signal)}
+tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
+#stageSel{
+  margin-left:auto;font-family:inherit;font-size:11.5px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);
+  background:#FBFCFD;border:1px solid var(--rule);border-radius:2px;
+  padding:5px 8px;cursor:pointer;min-width:150px;
+}
+#stageSel:hover{border-color:var(--ink-2)}
+#stageSel.on{color:#fff;border-color:transparent}
+.stage-cap[data-filter]{cursor:pointer;user-select:none}
+.stage.dim{opacity:.45}
+.pill{
+  display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:#fff;padding:3px 7px;border-radius:2px;white-space:nowrap;
+}
+[contenteditable]{outline:none;border-radius:2px}
+[contenteditable]:hover{box-shadow:inset 0 -1px 0 var(--rule)}
+[contenteditable]:focus{background:#FFF8DC;box-shadow:inset 0 -1px 0 var(--signal)}
+[contenteditable]:empty:before{content:attr(data-ph);color:#B6C0CD}
+
+.footnote{font-size:11.5px;color:var(--muted);margin-top:16px;max-width:70ch}
+
+@media(max-width:1080px){
+  .cols{grid-template-columns:1fr}
+  .rail{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .rail{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .drawer{width:100%}
+}
+@media print{
+  body{background:#fff;padding:0}
+  .toolbar,.rowdel,.drawer,.scrim,.ea-list h3 button,.ea-item .x{display:none!important}
+  .masthead{background:#fff;color:var(--ink);border-bottom:3px solid var(--signal)}
+    .panel,.rail{border-color:#bbb;break-inside:avoid}
+}
+</style>
+
+<div class="masthead">
+  <div class="wrap mast-grid">
+    <div>
+      <div class="unit" contenteditable data-meta="unit" data-ph="Unit">UK</div>
+      <h1 class="title"><span contenteditable data-meta="title" data-ph="Title">H1–H2 2026</span> <span class="accent" contenteditable data-meta="accent" data-ph="…">Pipeline</span></h1>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button class="primary" id="addDeal">Add deal</button>
+    <button id="linkBtn">Link a OneDrive file</button>
+    <button id="exportBtn">Save a copy</button>
+    <button id="csvBtn">Open in Excel</button>
+    <button id="importBtn">Load a copy</button>
+    <button id="printBtn">Print</button>
+    <button class="danger" id="resetBtn">Reset to original</button>
+    <span class="saved" id="saved"></span>
+  </div>
+
+  <div class="linkbar" id="linkbar"><span class="dot"></span><span>Checking storage…</span></div>
+
+  <div class="rail" id="rail"></div>
+
+  <div class="cols">
+    <div class="panel">
+      <div class="panel-head">
+        <h2 contenteditable data-meta="registerTitle" data-ph="Heading">Deals</h2>
+        <select id="stageSel" aria-label="Filter by stage"></select>
+      </div>
+      <div class="tscroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:34px">#</th>
+              <th data-sort="project">Project <span class="arrow"></span></th>
+              <th data-sort="buyer">Buyer <span class="arrow"></span></th>
+              <th data-sort="stage">Stage <span class="arrow"></span></th>
+              <th data-sort="status">Status / closure <span class="arrow"></span></th>
+              <th data-sort="start">Start date <span class="arrow"></span></th>
+              <th data-sort="ev" style="text-align:right">EV <span class="arrow"></span></th>
+              <th style="width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+          <tfoot id="tfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel ea">
+        <div class="panel-head"><h2>Engagement agreements</h2></div>
+        <div class="ea-row" id="eaCounts"></div>
+        <div id="eaLists"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footnote">Everything on this page is editable and saves automatically in your browser. Use <b>Export JSON</b> to hand the file to someone else, and <b>Import JSON</b> to load theirs.</p>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Deal editor">
+  <div class="kicker" id="drawerKicker">Edit deal</div>
+  <h2 id="drawerTitle">—</h2>
+  <div class="field"><label>Project</label><input id="f-project"></div>
+  <div class="field"><label>Buyer</label><input id="f-buyer"></div>
+  <div class="field"><label>Stage</label><select id="f-stage"></select></div>
+  <div class="field"><label>Status / closure</label><input id="f-status"></div>
+  <div class="field"><label>Start date</label><input id="f-start"></div>
+  <div class="field"><label>Enterprise value</label><input id="f-ev" placeholder="$25M"></div>
+  <div class="field"><label>Notes</label><textarea id="f-note" placeholder="Rev. $55M, EBITDA $11M"></textarea></div>
+  <div class="drawer-actions">
+    <button class="primary" id="f-save" style="flex:1">Save changes</button>
+    <button class="danger" id="f-del">Delete</button>
+  </div>
+</aside>
+
+<script>
+const STAGES = [
+  {id:"closure",  label:"Closure",       color:"var(--s-closure)"},
+  {id:"mandated", label:"Mandated",      color:"var(--s-mandated)"},
+  {id:"dd",       label:"DD",            color:"var(--s-dd)"},
+  {id:"live",     label:"Live",          color:"var(--s-live)"},
+  {id:"book",     label:"Book building", color:"var(--s-book)"},
+  {id:"passive",  label:"Passive",       color:"var(--s-passive)"}
+];
+const SC = Object.fromEntries(STAGES.map(s=>[s.id,s]));
+
+const SEED = {
+  unit:UNIT.label,
+  title:"H1–H2 2026",
+  accent:"Pipeline",
+  registerTitle:"Deals",
+  mandated:14,
+  deals:[
+    {id:"d1",  project:"Topaz / TalentBurst", buyer:"Epitec / SB", stage:"closure", status:"Closed / June 2, 2026", start:"Oct 29, 2024", ev:"$18.5M", note:"SLED / Staffing", closed:true},
+    {id:"d2",  project:"Canvas / Media Lab", buyer:"Teamshares / PE", stage:"dd", status:"DD (4/8/26) / Q3 closure 2026", start:"Nov 4, 2025", ev:"$21.5M", note:"Target close Sep 30"},
+    {id:"d3",  project:"Orion / ObjectWin", buyer:"Care Career (SureStaff) / Holding Co.", stage:"dd", status:"DD / Q3 closure 2026", start:"Mar 11, 2026", ev:"$20M", note:""},
+    {id:"d4",  project:"Platinum / Bayforce", buyer:"Civaris / PE", stage:"dd", status:"DD / Q4 closure 2026", start:"Aug 20, 2025", ev:"$31M", note:""},
+    {id:"d5",  project:"Sirius / SGS Consulting", buyer:"Legion Holdings / Pioneers", stage:"dd", status:"DD / Q4 closure 2026", start:"—", ev:"", note:""},
+    {id:"d6",  project:"Amber / Empyra", buyer:"Black Lake Capital / Tricorner", stage:"live", status:"Live / Q4 closure 2026", start:"Feb 12, 2026", ev:"$30M", note:""},
+    {id:"d7",  project:"Crane / 85Sixty", buyer:"King & Partners / SB", stage:"live", status:"Live / Q4 closure 2026", start:"Mar 23, 2026", ev:"$15M", note:""},
+    {id:"d8",  project:"Ensight / NITS", buyer:"IOI stage", stage:"live", status:"Live / Q4 closure 2026", start:"May 26, 2026", ev:"", note:""},
+    {id:"d9",  project:"Summit / Nayamode", buyer:"MC stage", stage:"live", status:"Live / Q4 closure 2026", start:"Jun 24, 2026", ev:"", note:""},
+    {id:"d10", project:"Night Sky / Alcor", buyer:"IOI stage", stage:"live", status:"Live / Q4 closure 2026", start:"Jun 29, 2026", ev:"", note:""},
+    {id:"d11", project:"ThinkSys", buyer:"", stage:"book", status:"Book building", start:"", ev:"$25–30M", note:"EV range $25–30M"},
+    {id:"d12", project:"H10 Capital", buyer:"", stage:"book", status:"Book building", start:"", ev:"", note:"Rev. $55M, EBITDA $11M"},
+    {id:"d13", project:"Ascendo Resources", buyer:"", stage:"book", status:"On hold", start:"", ev:"", note:""},
+    {id:"d14", project:"Watson / Gold Group", buyer:"", stage:"passive", status:"Passive", start:"", ev:"", note:""}
+  ],
+  ea:{
+    won:["ThinkSys / SEP","H10 Capital / SEP","SGS Consulting / Q1","Nayamode / Q1"],
+    sent:["ProcessQ / Sep mandate","TalentBurst (Healthcare) / Sep mandate","West Cary Group / Sep mandate","Mlogica / Oct mandate","Arisant / 2027","Invoke"],
+    lost:["Contiem","VSO"]
+  }
+};
+
+/* ===== BUSINESS UNIT CONFIG — the only thing that differs between the four files.
+   storageKey and handleDb must stay unique, or two units will overwrite each other. */
+const UNIT = {
+  label:"UK",
+  storageKey:"pipeline-uk-2026",
+  handleDb:"pipeline-fs-uk",
+  fileBase:"pipeline-uk-2026",
+  blank:true
+};
+
+const KEY=UNIT.storageKey;
+
+/* Set to true to produce a share copy: hides all controls and disables editing. */
+const READONLY = false;
+const ED = READONLY ? "" : "contenteditable";
+let state;
+if(UNIT.blank){ SEED.deals=[]; SEED.mandated=0; SEED.ea={won:[],sent:[],lost:[]}; }
+state = JSON.parse(JSON.stringify(SEED));
+
+let sortBy=null, sortDir=1, stageFilter=null, editing=null;
+
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num = ev=>{const m=String(ev||"").match(/([\d.]+)/); return m?parseFloat(m[1]):0;};
+
+/* ---------- persistence ---------- */
+/* Three layers, in order of durability:
+   1. a real file you pick (kept in your OneDrive folder) — written on every change
+   2. Claude's artifact storage, when running inside Claude
+   3. the browser's own storage, as a local cache            */
+
+const FS_OK = typeof window.showSaveFilePicker === "function";
+let fileHandle = null;
+
+/* remember which file was linked, so it reconnects next time */
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(UNIT.handleDb,1);
+  r.onupgradeneeded=()=>r.result.createObjectStore("h");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function idbPut(v){const db=await idb();return new Promise(res=>{const t=db.transaction("h","readwrite");t.objectStore("h").put(v,"file");t.oncomplete=res;});}
+async function idbGet(){const db=await idb();return new Promise(res=>{const t=db.transaction("h","readonly");const q=t.objectStore("h").get("file");q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);});}
+async function idbDel(){const db=await idb();return new Promise(res=>{const t=db.transaction("h","readwrite");t.objectStore("h").delete("file");t.oncomplete=res;});}
+
+function setLink(html,on,btn){
+  const b=$("#linkbar");
+  b.className="linkbar"+(on?" on":"");
+  b.innerHTML=`<span class="dot"></span><span>${html}</span>`+(btn||"");
+}
+function linkedMsg(){
+  const t=new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+  setLink(`Saving to <b>${esc(fileHandle.name)}</b> — last write ${t}`,true,`<button id="unlinkBtn">Unlink</button>`);
+}
+
+const store = {
+  async set(v){
+    if(window.storage) return window.storage.set(KEY,v);
+    localStorage.setItem(KEY,v);
+  },
+  async get(){
+    if(window.storage){ const r=await window.storage.get(KEY); return r&&r.value; }
+    return localStorage.getItem(KEY);
+  }
+};
+
+async function writeFile(){
+  if(!fileHandle) return;
+  try{
+    const w=await fileHandle.createWritable();
+    await w.write(JSON.stringify(state,null,2));
+    await w.close();
+    linkedMsg();
+  }catch(e){
+    setLink(`Couldn't write to <b>${esc(fileHandle.name)}</b>. It may have moved or be open elsewhere.`,false,`<button id="linkAgain">Choose file</button>`);
+  }
+}
+
+let saveTimer;
+function save(){
+  if(READONLY) return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    try{ await store.set(JSON.stringify(state)); flash("Saved"); }
+    catch(e){ flash("Not saved"); }
+    writeFile();
+  },300);
+}
+function flash(t){ const el=$("#saved"); el.textContent=t; setTimeout(()=>{if(el.textContent===t)el.textContent="";},1800); }
+
+async function pickFile(){
+  try{
+    const h=await window.showSaveFilePicker({
+      suggestedName:`${UNIT.fileBase}.json`,
+      types:[{description:"Pipeline data",accept:{"application/json":[".json"]}}]
+    });
+    fileHandle=h; await idbPut(h);
+    /* if the chosen file already holds a pipeline, load it rather than overwrite */
+    try{
+      const txt=await (await h.getFile()).text();
+      const p=JSON.parse(txt);
+      if(p&&p.deals&&confirm(`${h.name} already contains a pipeline with ${p.deals.length} deals. Load it instead of overwriting?`)){
+        state=p; render();
+      }
+    }catch(e){/* new or empty file */}
+    await writeFile();
+  }catch(e){
+    if(e.name==="AbortError") return;
+    setLink("Your browser blocked the file picker. Download this page and open it in Edge to link a file.",false,"");
+  }
+}
+
+async function initLink(){
+  if(!FS_OK){
+    setLink("This browser can't save straight to a file. Use <b>Save a copy</b> after each session, or open this page in Edge.",false,"");
+    return;
+  }
+  const h=await idbGet();
+  if(!h){
+    setLink("Not linked to a file yet. Link one in your OneDrive folder so changes are backed up.",false,"");
+    return;
+  }
+  const p=await h.queryPermission({mode:"readwrite"});
+  if(p==="granted"){
+    fileHandle=h;
+    try{
+      const txt=await (await h.getFile()).text();
+      const parsed=JSON.parse(txt);
+      if(parsed&&parsed.deals){ state=parsed; render(); }
+    }catch(e){/* keep what we have */}
+    linkedMsg();
+  }else{
+    setLink(`Linked to <b>${esc(h.name)}</b>. Reconnect to keep saving there.`,false,`<button id="reconnectBtn">Reconnect</button>`);
+  }
+}
+
+async function load(){
+  if(READONLY){
+    document.body.classList.add("ro");
+    document.querySelectorAll("[contenteditable]").forEach(el=>el.removeAttribute("contenteditable"));
+    render();
+    return;                      /* seed data only — no stored edits, no file link */
+  }
+  try{
+    const v=await store.get();
+    if(v){ const p=JSON.parse(v); if(p&&p.deals) state=p; }
+  }catch(e){/* first run — seed data stands */}
+  render();
+  initLink();
+}
+
+/* ---------- render ---------- */
+function render(){ renderHead(); renderRail(); renderTable(); renderEA(); }
+
+function renderHead(){
+  ["unit","title","accent","registerTitle"].forEach(k=>{
+    const el=document.querySelector(`[data-meta="${k}"]`);
+    if(el && el.textContent!==state[k]) el.textContent=state[k];
+  });
+}
+
+function renderRail(){
+  $("#rail").innerHTML = STAGES.map(s=>{
+    const items = state.deals.filter(d=>d.stage===s.id);
+    let body;
+    if(s.id==="mandated"){
+      body = `<div class="bulk">
+        <input id="mandCount" type="number" min="0" value="${state.mandated}" ${READONLY?"readonly":""} aria-label="Mandated projects count">
+        <small>signed mandates in market</small>
+      </div>` + items.map(chip).join("");
+    } else {
+      body = items.length ? items.map(chip).join("")
+        : `<div style="font-size:12px;color:var(--muted);padding:4px 0">Nothing here yet. Add a deal and set its stage to ${esc(s.label.toLowerCase())}.</div>`;
+    }
+    return `<section class="stage${stageFilter&&stageFilter!==s.id?" dim":""}">
+      <header class="stage-cap" style="background:${s.color}" data-filter="${s.id}"
+        title="${stageFilter===s.id?"Show all deals":"Show only "+s.label+" deals"}">
+        <span>${esc(s.label)}</span><span class="n">${s.id==="mandated"?state.mandated:items.length}</span>
+      </header>
+      <div class="stage-body" data-stage="${s.id}">${body}</div>
+    </section>`;
+  }).join("");
+
+  function chip(d){
+    return `<button class="chip" data-open="${d.id}" ${READONLY?"disabled style=cursor:default":'draggable="true"'} data-drag-deal="${d.id}" style="--c:${SC[d.stage].color}">
+      <span class="nm">${esc(d.project)||"Untitled"}</span>
+      <span class="meta">${esc(d.note || d.buyer || d.status || "")}</span>
+    </button>`;
+  }
+  const mc=$("#mandCount");
+  if(mc) mc.addEventListener("change",e=>{state.mandated=Math.max(0,+e.target.value||0);save();render();});
+}
+
+function visibleDeals(){
+  let rows = stageFilter ? state.deals.filter(d=>d.stage===stageFilter) : [...state.deals];
+  if(sortBy){
+    rows=[...rows].sort((a,b)=>{
+      if(sortBy==="ev") return (num(a.ev)-num(b.ev))*sortDir;
+      if(sortBy==="start") return ((Date.parse(a.start)||0)-(Date.parse(b.start)||0))*sortDir;
+      if(sortBy==="stage") return (STAGES.findIndex(s=>s.id===a.stage)-STAGES.findIndex(s=>s.id===b.stage))*sortDir;
+      return String(a[sortBy]||"").localeCompare(String(b[sortBy]||""))*sortDir;
+    });
+  }
+  return rows;
+}
+
+function renderTable(){
+  const rows=visibleDeals();
+  const canDrag=!READONLY && !sortBy;
+  $("#tbody").innerHTML = rows.map((d,i)=>`
+    <tr class="${d.stage==="closure"?"is-closed":""}" data-row="${d.id}">
+      <td class="idx" ${canDrag?`draggable="true" data-drag-row="${d.id}"`:""} title="${canDrag?"Drag to reorder":""}">${i+1}</td>
+      <td class="proj" ${ED} data-id="${d.id}" data-f="project" data-ph="Project name">${esc(d.project)}</td>
+      <td class="buyer" ${ED} data-id="${d.id}" data-f="buyer" data-ph="Buyer">${esc(d.buyer)}</td>
+      <td>${READONLY
+        ? `<span class="pill" style="background:${SC[d.stage].color}">${esc(SC[d.stage].label)}</span>`
+        : `<select data-id="${d.id}" data-f="stage" style="background:${SC[d.stage].color}">
+             ${STAGES.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${esc(s.label)}</option>`).join("")}
+           </select>`}</td>
+      <td class="status" ${ED} data-id="${d.id}" data-f="status" data-ph="Status">${esc(d.status)}</td>
+      <td class="dt" ${ED} data-id="${d.id}" data-f="start" data-ph="—">${esc(d.start)}</td>
+      <td class="ev" ${ED} data-id="${d.id}" data-f="ev" data-ph="—">${esc(d.ev)}</td>
+      <td>${READONLY?"":`<button class="rowdel" data-del="${d.id}" title="Delete deal" aria-label="Delete deal">×</button>`}</td>
+    </tr>`).join("") || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">No deals in ${esc(SC[stageFilter].label)}. Click the stage header again to see all ${state.deals.length}.</td></tr>`;
+
+  $("#tfoot").innerHTML = rows.length?`<tr><td></td><td colspan="7">${rows.length} deal${rows.length>1?"s":""} shown${stageFilter?" of "+state.deals.length:""}</td></tr>`:"";
+  const sel=$("#stageSel");
+  sel.value = stageFilter || "";
+  sel.className = stageFilter ? "on" : "";
+  sel.style.background = stageFilter ? SC[stageFilter].color : "#FBFCFD";
+  document.querySelectorAll("th[data-sort]").forEach(th=>{
+    th.querySelector(".arrow").textContent = th.dataset.sort===sortBy ? (sortDir>0?"▲":"▼") : "";
+  });
+}
+
+function renderEA(){
+  const sets=[["won","EA won",'var(--won)'],["sent","EA sent / mandate pipeline",'var(--s-mandated)'],["lost","EA lost",'var(--lost)']];
+  $("#eaCounts").innerHTML = sets.map(([k,l,c])=>
+    `<div class="ea-cell"><b style="color:${c}">${state.ea[k].length}</b><small>${esc(l.replace(" / mandate pipeline",""))}</small></div>`).join("");
+  $("#eaLists").innerHTML = sets.map(([k,l,c])=>`
+    <div class="ea-list" data-ea-list="${k}">
+      <h3>${esc(l)} ${READONLY?"":`<button data-eaadd="${k}" title="Add item">+</button>`}</h3>
+      ${state.ea[k].map((v,i)=>`<div class="ea-item" data-ea-slot="${k}" data-i="${i}">
+        <span class="dot" style="background:${c}" ${READONLY?"":`draggable="true" data-drag-ea="${k}" data-i="${i}" title="Drag to move"`}></span>
+        <span ${ED} data-ea="${k}" data-i="${i}" data-ph="Name">${esc(v)}</span>
+        ${READONLY?"":`<button class="x" data-eadel="${k}" data-i="${i}" aria-label="Remove">×</button>`}
+      </div>`).join("") || `<div style="font-size:12px;color:var(--muted)">Nothing yet.</div>`}
+    </div>`).join("");
+}
+
+$("#stageSel").innerHTML =
+  `<option value="">All stages</option>` +
+  STAGES.map(st=>`<option value="${st.id}">${esc(st.label)}</option>`).join("");
+$("#stageSel").addEventListener("change",e=>{ stageFilter = e.target.value || null; render(); });
+
+/* ---------- interactions ---------- */
+document.addEventListener("blur",e=>{
+  const el=e.target;
+  if(!el.hasAttribute || !el.hasAttribute("contenteditable")) return;
+  const v=el.textContent.trim();
+  if(el.dataset.f){
+    const d=state.deals.find(x=>x.id===el.dataset.id);
+    if(d && d[el.dataset.f]!==v){ d[el.dataset.f]=v; save(); render(); }
+  } else if(el.dataset.ea){
+    const arr=state.ea[el.dataset.ea], i=+el.dataset.i;
+    if(arr[i]!==v){ arr[i]=v; save(); renderEA(); }
+  } else if(el.dataset.meta){
+    const k=el.dataset.meta;
+    if(state[k]!==v){ state[k]=v; save(); }
+  }
+},true);
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter" && e.target.hasAttribute && e.target.hasAttribute("contenteditable")){ e.preventDefault(); e.target.blur(); }
+  if(e.key==="Escape") closeDrawer();
+});
+
+document.addEventListener("change",e=>{
+  if(e.target.dataset && e.target.dataset.f==="stage"){
+    const d=state.deals.find(x=>x.id===e.target.dataset.id);
+    d.stage=e.target.value; save(); render();
+  }
+});
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort],[data-filter]");
+  if(!t) return;
+  if(t.dataset.filter){
+    stageFilter = stageFilter===t.dataset.filter ? null : t.dataset.filter;
+    render(); return;
+  }
+  if(READONLY){ if(t.dataset.sort){ if(sortBy===t.dataset.sort) sortDir*=-1; else {sortBy=t.dataset.sort;sortDir=1;} renderTable(); } return; }
+  if(t.dataset.open) openDrawer(t.dataset.open);
+  else if(t.dataset.del){
+    const d=state.deals.find(x=>x.id===t.dataset.del);
+    if(confirm(`Delete “${d.project||"this deal"}”?`)){ state.deals=state.deals.filter(x=>x.id!==t.dataset.del); save(); render(); }
+  }
+  else if(t.dataset.eaadd){ state.ea[t.dataset.eaadd].push(""); save(); renderEA();
+    const l=document.querySelectorAll(`[data-ea="${t.dataset.eaadd}"]`); l[l.length-1].focus(); }
+  else if(t.dataset.eadel){ state.ea[t.dataset.eadel].splice(+t.dataset.i,1); save(); renderEA(); }
+  else if(t.dataset.sort){
+    if(sortBy===t.dataset.sort) sortDir*=-1; else {sortBy=t.dataset.sort;sortDir=1;}
+    renderTable();
+  }
+});
+
+$("#addDeal").addEventListener("click",()=>{
+  const d={id:"d"+Date.now(),project:"",buyer:"",stage:"live",status:"",start:"",ev:"",note:""};
+  state.deals.push(d); save(); render(); openDrawer(d.id); $("#f-project").focus();
+});
+
+/* drawer */
+function openDrawer(id){
+  editing=id;
+  const d=state.deals.find(x=>x.id===id); if(!d) return;
+  $("#drawerTitle").textContent = d.project || "New deal";
+  $("#drawerKicker").textContent = SC[d.stage].label;
+  $("#f-stage").innerHTML = STAGES.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${s.label}</option>`).join("");
+  ["project","buyer","status","start","ev","note"].forEach(f=>$("#f-"+f).value=d[f]||"");
+  $("#drawer").classList.add("open"); $("#scrim").classList.add("on");
+}
+function closeDrawer(){ editing=null; $("#drawer").classList.remove("open"); $("#scrim").classList.remove("on"); }
+$("#scrim").addEventListener("click",closeDrawer);
+$("#f-save").addEventListener("click",()=>{
+  const d=state.deals.find(x=>x.id===editing); if(!d) return;
+  ["project","buyer","status","start","ev","note"].forEach(f=>d[f]=$("#f-"+f).value.trim());
+  d.stage=$("#f-stage").value;
+  save(); render(); closeDrawer();
+});
+$("#f-del").addEventListener("click",()=>{
+  const d=state.deals.find(x=>x.id===editing);
+  if(confirm(`Delete “${d.project||"this deal"}”?`)){ state.deals=state.deals.filter(x=>x.id!==editing); save(); render(); closeDrawer(); }
+});
+
+/* export / import / print / reset */
+$("#linkBtn").addEventListener("click",pickFile);
+document.addEventListener("click",async e=>{
+  if(e.target.id==="unlinkBtn"){
+    fileHandle=null; await idbDel();
+    setLink("Not linked to a file. Changes are only kept in this browser.",false,"");
+  }
+  if(e.target.id==="linkAgain") pickFile();
+  if(e.target.id==="reconnectBtn"){
+    const h=await idbGet(); if(!h) return;
+    if(await h.requestPermission({mode:"readwrite"})==="granted"){ fileHandle=h; initLink(); }
+  }
+});
+
+$("#exportBtn").addEventListener("click",()=>{
+  const d=new Date().toISOString().slice(0,10);
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=`${UNIT.fileBase}-${d}.json`; a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+$("#csvBtn").addEventListener("click",()=>{
+  const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const rows=[["#","Project","Buyer","Stage","Status / closure","Start date","EV","Notes"]];
+  state.deals.forEach((d,i)=>rows.push([i+1,d.project,d.buyer,SC[d.stage].label,d.status,d.start,d.ev,d.note]));
+  rows.push([]);
+  rows.push(["Signed mandates without a named counterparty",state.mandated]);
+  ["won","sent","lost"].forEach(k=>rows.push(["EA "+k,state.ea[k].join("; ")]));
+  const csv="\uFEFF"+rows.map(r=>r.map(q).join(",")).join("\r\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download=`${UNIT.fileBase}-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(a.href);
+});
+$("#importBtn").addEventListener("click",()=>{
+  const i=document.createElement("input"); i.type="file"; i.accept="application/json";
+  i.onchange=()=>{
+    const f=i.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{ try{ const p=JSON.parse(r.result); if(!p.deals) throw 0; state=p; save(); render(); flash("Imported"); }
+      catch(err){ alert("That file isn't a pipeline export. Choose a JSON file created with Export JSON."); } };
+    r.readAsText(f);
+  };
+  i.click();
+});
+$("#printBtn").addEventListener("click",()=>window.print());
+$("#resetBtn").addEventListener("click",()=>{
+  if(confirm("Reset every field back to the original pipeline? Your edits will be lost.")){
+    state=JSON.parse(JSON.stringify(SEED)); save(); render(); flash("Reset");
+  }
+});
+
+/* ---------- drag & drop ---------- */
+let drag=null;
+
+function clearMarks(){
+  document.querySelectorAll(".drop-in,.drop-before").forEach(el=>el.classList.remove("drop-in","drop-before"));
+}
+
+/* deals live in one ordered array; moving = splice out, splice back in */
+function moveDeal(id,{beforeId,stage}={}){
+  const i=state.deals.findIndex(d=>d.id===id); if(i<0) return;
+  const [d]=state.deals.splice(i,1);
+  if(stage) d.stage=stage;
+  if(beforeId && beforeId!==id){
+    const j=state.deals.findIndex(x=>x.id===beforeId);
+    state.deals.splice(j<0?state.deals.length:j,0,d);
+  }else if(stage){
+    /* dropped on empty space in a column — sit after the last deal already there */
+    let last=-1;
+    state.deals.forEach((x,k)=>{ if(x.stage===stage) last=k; });
+    state.deals.splice(last+1,0,d);
+  }else{
+    state.deals.push(d);
+  }
+}
+
+function moveEA(from,i,to,j){
+  const [v]=state.ea[from].splice(i,1);
+  if(j==null){ state.ea[to].push(v); return; }
+  if(from===to && i<j) j--;
+  state.ea[to].splice(j,0,v);
+}
+
+function target(e){
+  if(!drag) return null;
+  if(drag.kind==="deal"){
+    const chip=e.target.closest(".chip[data-drag-deal]");
+    if(chip) return {el:chip,mark:"drop-before",beforeId:chip.dataset.dragDeal,stage:chip.closest("[data-stage]").dataset.stage};
+    const col=e.target.closest("[data-stage]");
+    if(col) return {el:col,mark:"drop-in",stage:col.dataset.stage};
+    const row=e.target.closest("tr[data-row]");
+    if(row && drag.from==="row") return {el:row,mark:"drop-before",beforeId:row.dataset.row};
+  }
+  if(drag.kind==="ea"){
+    const item=e.target.closest("[data-ea-slot]");
+    if(item) return {el:item,mark:"drop-before",list:item.dataset.eaSlot,index:+item.dataset.i};
+    const list=e.target.closest("[data-ea-list]");
+    if(list) return {el:list,mark:"drop-in",list:list.dataset.eaList,index:null};
+  }
+  return null;
+}
+
+document.addEventListener("dragstart",e=>{
+  if(READONLY) return;
+  const chip=e.target.closest("[data-drag-deal]");
+  const row=e.target.closest("[data-drag-row]");
+  const ea=e.target.closest("[data-drag-ea]");
+  if(chip)      drag={kind:"deal",id:chip.dataset.dragDeal,from:"chip"};
+  else if(row)  drag={kind:"deal",id:row.dataset.dragRow,from:"row"};
+  else if(ea)   drag={kind:"ea",list:ea.dataset.dragEa,index:+ea.dataset.i};
+  else return;
+  e.dataTransfer.effectAllowed="move";
+  e.dataTransfer.setData("text/plain",drag.id||"ea");   /* Firefox needs a payload */
+  (row?row.closest("tr"):(ea?ea.closest(".ea-item"):chip)).classList.add("dragging");
+});
+
+document.addEventListener("dragover",e=>{
+  const t=target(e); if(!t) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect="move";
+  if(!t.el.classList.contains(t.mark)){ clearMarks(); t.el.classList.add(t.mark); }
+});
+
+document.addEventListener("dragleave",e=>{
+  if(e.target.classList && e.target.classList.contains("drop-in")) e.target.classList.remove("drop-in");
+});
+
+document.addEventListener("drop",e=>{
+  const t=target(e); if(!t) return;
+  e.preventDefault();
+  if(drag.kind==="deal") moveDeal(drag.id,{beforeId:t.beforeId,stage:t.stage});
+  else moveEA(drag.list,drag.index,t.list,t.index);
+  drag=null; clearMarks(); save(); render();
+});
+
+document.addEventListener("dragend",()=>{
+  drag=null; clearMarks();
+  document.querySelectorAll(".dragging").forEach(el=>el.classList.remove("dragging"));
+});
+
+load();
+</script>
