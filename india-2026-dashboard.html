@@ -363,6 +363,16 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 </aside>
 
 <script>
+/* ===== BUSINESS UNIT CONFIG — the only thing that differs between the four files.
+   storageKey and handleDb must stay unique, or two units will overwrite each other. */
+const UNIT = {
+  label:"India",
+  storageKey:"pipeline-india-2026",
+  handleDb:"pipeline-fs-india",
+  fileBase:"pipeline-india-2026",
+  blank:true
+};
+
 const STAGES = [
   {id:"closure",  label:"Closure",       color:"var(--s-closure)"},
   {id:"mandated", label:"Mandated",      color:"var(--s-mandated)"},
@@ -401,17 +411,6 @@ const SEED = {
     lost:["Contiem","VSO"]
   }
 };
-
-/* ===== BUSINESS UNIT CONFIG — the only thing that differs between the four files.
-   storageKey and handleDb must stay unique, or two units will overwrite each other. */
-const UNIT = {
-  label:"India",
-  storageKey:"pipeline-india-2026",
-  handleDb:"pipeline-fs-india",
-  fileBase:"pipeline-india-2026",
-  blank:true
-};
-
 const KEY=UNIT.storageKey;
 
 /* Set to true to produce a share copy: hides all controls and disables editing. */
@@ -621,7 +620,11 @@ function renderTable(){
       <td class="dt" ${ED} data-id="${d.id}" data-f="start" data-ph="—">${esc(d.start)}</td>
       <td class="ev" ${ED} data-id="${d.id}" data-f="ev" data-ph="—">${esc(d.ev)}</td>
       <td>${READONLY?"":`<button class="rowdel" data-del="${d.id}" title="Delete deal" aria-label="Delete deal">×</button>`}</td>
-    </tr>`).join("") || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">No deals in ${esc(SC[stageFilter].label)}. Click the stage header again to see all ${state.deals.length}.</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">${
+      stageFilter
+        ? `No deals at ${esc(SC[stageFilter].label)} stage. Choose “All stages” to see the other ${state.deals.length}.`
+        : `No deals yet — click <b>Add deal</b> to start this pipeline.`
+    }</td></tr>`;
 
   $("#tfoot").innerHTML = rows.length?`<tr><td></td><td colspan="7">${rows.length} deal${rows.length>1?"s":""} shown${stageFilter?" of "+state.deals.length:""}</td></tr>`:"";
   const sel=$("#stageSel");
