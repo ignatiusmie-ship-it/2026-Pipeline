@@ -22,6 +22,7 @@
   --s-live:#6B2FA0;
   --s-book:#0E7490;
   --s-passive:#9AA7B8;
+  --s-terminated:#374151;
 
   --won:#12994B;
   --lost:#D22630;
@@ -96,7 +97,7 @@ button.danger:hover{border-color:var(--signal);color:var(--signal)}
 /* ---------- pipeline rail ---------- */
 .rail{
   display:grid;
-  grid-template-columns:repeat(6,minmax(0,1fr));
+  grid-template-columns:repeat(7,minmax(0,1fr));
   gap:2px;
   background:var(--rule-soft);
   border:1px solid var(--rule);
@@ -379,7 +380,8 @@ const STAGES = [
   {id:"dd",       label:"DD",            color:"var(--s-dd)"},
   {id:"live",     label:"Live",          color:"var(--s-live)"},
   {id:"book",     label:"Book building", color:"var(--s-book)"},
-  {id:"passive",  label:"Passive",       color:"var(--s-passive)"}
+  {id:"passive",  label:"Passive",       color:"var(--s-passive)"},
+  {id:"terminated", label:"Terminated",  color:"var(--s-terminated)"}
 ];
 const SC = Object.fromEntries(STAGES.map(s=>[s.id,s]));
 
