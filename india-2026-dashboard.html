@@ -243,6 +243,12 @@ tfoot td{
 .dragging{opacity:.35}
 .stage-body.drop-in{background:#F1F4F8;outline:2px dashed var(--rule);outline-offset:-4px}
 .ea-list.drop-in{background:#F1F4F8}
+.ea-list.drop-before{box-shadow:0 -2px 0 var(--signal)}
+.grip{
+  cursor:grab;color:var(--rule);font-size:12px;line-height:1;
+  margin-right:5px;letter-spacing:-1px;user-select:none;
+}
+.ea-list:hover .grip{color:var(--muted)}
 .chip.drop-before{box-shadow:0 -2px 0 var(--signal)}
 .ea-item.drop-before{box-shadow:0 -2px 0 var(--signal)}
 tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
@@ -674,15 +680,20 @@ function normaliseEA(){
   state.ea=state.ea||{};
   EA_SETS.forEach(s=>{ if(!Array.isArray(state.ea[s.k])) state.ea[s.k]=[]; });
   state.eaTitles=Object.assign({},EA_DEFAULTS,state.eaTitles||{});
+  const keys=EA_SETS.map(s=>s.k);
+  let o=Array.isArray(state.eaOrder)?state.eaOrder.filter(k=>keys.includes(k)):[];
+  keys.forEach(k=>{ if(!o.includes(k)) o.push(k); });      /* new sections land at the end */
+  state.eaOrder=o;
 }
+function eaOrdered(){ return state.eaOrder.map(k=>EA_SETS.find(s=>s.k===k)); }
 
 function renderEA(){
   normaliseEA();
-  $("#eaCounts").innerHTML = EA_SETS.map(({k,short,color:c})=>
+  $("#eaCounts").innerHTML = eaOrdered().map(({k,short,color:c})=>
     `<div class="ea-cell"><b style="color:${c}">${state.ea[k].length}</b><small>${esc(short)}</small></div>`).join("");
-  $("#eaLists").innerHTML = EA_SETS.map(({k,color:c})=>`
+  $("#eaLists").innerHTML = eaOrdered().map(({k,color:c})=>`
     <div class="ea-list" data-ea-list="${k}">
-      <h3><span ${ED} data-eatitle="${k}" data-ph="Section name">${esc(state.eaTitles[k])}</span> ${READONLY?"":`<button data-eaadd="${k}" title="Add item">+</button>`}</h3>
+      <h3>${READONLY?"":`<span class="grip" draggable="true" data-drag-sec="${k}" title="Drag to reorder this section">⠿</span>`}<span ${ED} data-eatitle="${k}" data-ph="Section name">${esc(state.eaTitles[k])}</span> ${READONLY?"":`<button data-eaadd="${k}" title="Add item">+</button>`}</h3>
       ${state.ea[k].map((v,i)=>`<div class="ea-item" data-ea-slot="${k}" data-i="${i}">
         <span class="dot" style="background:${c}" ${READONLY?"":`draggable="true" data-drag-ea="${k}" data-i="${i}" title="Drag to move"`}></span>
         <span ${ED} data-ea="${k}" data-i="${i}" data-ph="Name">${esc(v)}</span>
@@ -871,6 +882,14 @@ function moveDeal(id,{beforeId,stage}={}){
   }
 }
 
+function moveSection(k,beforeK){
+  if(k===beforeK) return;
+  const o=state.eaOrder;
+  o.splice(o.indexOf(k),1);
+  const j=o.indexOf(beforeK);
+  o.splice(j<0?o.length:j,0,k);
+}
+
 function moveEA(from,i,to,j){
   const [v]=state.ea[from].splice(i,1);
   if(j==null){ state.ea[to].push(v); return; }
@@ -888,6 +907,11 @@ function target(e){
     const row=e.target.closest("tr[data-row]");
     if(row && drag.from==="row") return {el:row,mark:"drop-before",beforeId:row.dataset.row};
   }
+  if(drag.kind==="sec"){
+    const list=e.target.closest("[data-ea-list]");
+    if(list) return {el:list,mark:"drop-before",secBefore:list.dataset.eaList};
+    return null;
+  }
   if(drag.kind==="ea"){
     const item=e.target.closest("[data-ea-slot]");
     if(item) return {el:item,mark:"drop-before",list:item.dataset.eaSlot,index:+item.dataset.i};
@@ -902,13 +926,15 @@ document.addEventListener("dragstart",e=>{
   const chip=e.target.closest("[data-drag-deal]");
   const row=e.target.closest("[data-drag-row]");
   const ea=e.target.closest("[data-drag-ea]");
-  if(chip)      drag={kind:"deal",id:chip.dataset.dragDeal,from:"chip"};
+  const sec=e.target.closest("[data-drag-sec]");
+  if(sec)       drag={kind:"sec",k:sec.dataset.dragSec};
+  else if(chip) drag={kind:"deal",id:chip.dataset.dragDeal,from:"chip"};
   else if(row)  drag={kind:"deal",id:row.dataset.dragRow,from:"row"};
   else if(ea)   drag={kind:"ea",list:ea.dataset.dragEa,index:+ea.dataset.i};
   else return;
   e.dataTransfer.effectAllowed="move";
   e.dataTransfer.setData("text/plain",drag.id||"ea");   /* Firefox needs a payload */
-  (row?row.closest("tr"):(ea?ea.closest(".ea-item"):chip)).classList.add("dragging");
+  (sec?sec.closest(".ea-list"):(row?row.closest("tr"):(ea?ea.closest(".ea-item"):chip))).classList.add("dragging");
 });
 
 document.addEventListener("dragover",e=>{
@@ -926,6 +952,7 @@ document.addEventListener("drop",e=>{
   const t=target(e); if(!t) return;
   e.preventDefault();
   if(drag.kind==="deal") moveDeal(drag.id,{beforeId:t.beforeId,stage:t.stage});
+  else if(drag.kind==="sec") moveSection(drag.k,t.secBefore);
   else moveEA(drag.list,drag.index,t.list,t.index);
   drag=null; clearMarks(); save(); render();
 });
