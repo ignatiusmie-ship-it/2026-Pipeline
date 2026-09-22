@@ -514,15 +514,26 @@ async function pickFile(){
       suggestedName:`${UNIT.fileBase}.json`,
       types:[{description:"Pipeline data",accept:{"application/json":[".json"]}}]
     });
-    fileHandle=h; await idbPut(h);
-    /* if the chosen file already holds a pipeline, load it rather than overwrite */
+    /* never overwrite a file that already holds a pipeline without being told to */
+    let existing=null;
     try{
-      const txt=await (await h.getFile()).text();
-      const p=JSON.parse(txt);
-      if(p&&p.deals&&confirm(`${h.name} already contains a pipeline with ${p.deals.length} deals. Load it instead of overwriting?`)){
-        state=p; render();
-      }
+      const p=JSON.parse(await (await h.getFile()).text());
+      if(p && Array.isArray(p.deals)) existing=p;
     }catch(e){/* new or empty file */}
+
+    if(existing){
+      const ok=confirm(
+        `${h.name} already contains a pipeline with ${existing.deals.length} deal(s).\n\n`+
+        `OK  —  load that data into this page and keep saving there.\n`+
+        `Cancel  —  do nothing. The file is left exactly as it is.`
+      );
+      if(!ok){ setLink("Not linked. That file was left untouched.",false,""); return; }
+      fileHandle=h; await idbPut(h);
+      state=existing; render(); linkedMsg();
+      return;
+    }
+
+    fileHandle=h; await idbPut(h);
     await writeFile();
   }catch(e){
     if(e.name==="AbortError") return;
