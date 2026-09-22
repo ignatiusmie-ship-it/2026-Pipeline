@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>US BU 2026</title>
+<title>SaaS — H1–H2 2026 Pipeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
@@ -22,6 +22,7 @@
   --s-live:#6B2FA0;
   --s-book:#0E7490;
   --s-passive:#9AA7B8;
+  --s-terminated:#374151;
 
   --won:#12994B;
   --lost:#D22630;
@@ -96,7 +97,7 @@ button.danger:hover{border-color:var(--signal);color:var(--signal)}
 /* ---------- pipeline rail ---------- */
 .rail{
   display:grid;
-  grid-template-columns:repeat(6,minmax(0,1fr));
+  grid-template-columns:repeat(7,minmax(0,1fr));
   gap:2px;
   background:var(--rule-soft);
   border:1px solid var(--rule);
@@ -285,7 +286,7 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 <div class="masthead">
   <div class="wrap mast-grid">
     <div>
-      <div class="unit" contenteditable data-meta="unit" data-ph="Unit">US</div>
+      <div class="unit" contenteditable data-meta="unit" data-ph="Unit">SaaS</div>
       <h1 class="title"><span contenteditable data-meta="title" data-ph="Title">H1–H2 2026</span> <span class="accent" contenteditable data-meta="accent" data-ph="…">Pipeline</span></h1>
     </div>
   </div>
@@ -366,11 +367,11 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 /* ===== BUSINESS UNIT CONFIG — the only thing that differs between the four files.
    storageKey and handleDb must stay unique, or two units will overwrite each other. */
 const UNIT = {
-  label:"US",
-  storageKey:"pipeline-h1h2-2026",
-  handleDb:"pipeline-fs",
-  fileBase:"pipeline-us-2026",
-  blank:false
+  label:"SaaS",
+  storageKey:"pipeline-saas-2026",
+  handleDb:"pipeline-fs-saas",
+  fileBase:"pipeline-saas-2026",
+  blank:true
 };
 
 const STAGES = [
@@ -379,7 +380,8 @@ const STAGES = [
   {id:"dd",       label:"DD",            color:"var(--s-dd)"},
   {id:"live",     label:"Live",          color:"var(--s-live)"},
   {id:"book",     label:"Book building", color:"var(--s-book)"},
-  {id:"passive",  label:"Passive",       color:"var(--s-passive)"}
+  {id:"passive",  label:"Passive",       color:"var(--s-passive)"},
+  {id:"terminated", label:"Terminated",  color:"var(--s-terminated)"}
 ];
 const SC = Object.fromEntries(STAGES.map(s=>[s.id,s]));
 
