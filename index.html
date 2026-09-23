@@ -481,7 +481,6 @@ const CFG = {
   tenantId: "be5c3fcd-0bc7-4023-a37e-2c6ed6bc4f92",
   siteHost: "settlucasglobal.sharepoint.com",
   sitePath: "/sites/Pipeline2026",
-  fileName: "pipeline.json",
   scopes: ["User.Read", "Sites.ReadWrite.All"],
   pollSeconds: 60
 };
@@ -511,13 +510,13 @@ const COL_DEFAULTS = {idx:"#", project:"Project", buyer:"Buyer", stage:"Stage",
                       status:"Status / closure", start:"Start date", ev:"EV"};
 
 const UNITS = [
-  {id:"us",    label:"US",    folder:"US",    stages:BASE_STAGES,
+  {id:"us",    label:"US",    folder:"US",    file:"pipeline-us-2026.json",    stages:BASE_STAGES,
    ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
-  {id:"uk",    label:"UK",    folder:"UK",    stages:BASE_STAGES,
+  {id:"uk",    label:"UK",    folder:"UK",    file:"pipeline-uk-2026.json",    stages:BASE_STAGES,
    ea:["won","sent","lost"], eaEdit:true,  eaDrag:true,  colEdit:false},
-  {id:"saas",  label:"SaaS",  folder:"SaaS",  stages:[...BASE_STAGES, TERMINATED],
+  {id:"saas",  label:"SaaS",  folder:"SaaS",  file:"pipeline-saas-2026.json",  stages:[...BASE_STAGES, TERMINATED],
    ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
-  {id:"india", label:"India", folder:"India", stages:BASE_STAGES,
+  {id:"india", label:"India", folder:"India", file:"pipeline-india-2026.json", stages:BASE_STAGES,
    ea:["won","sent","nda","yet","lost"], eaEdit:true, eaDrag:true, colEdit:true,
    cols:{buyer:"Transaction Type"}}
 ];
@@ -703,7 +702,7 @@ async function go(id){
 /* =====================================================================
    SHAREPOINT FILES
    ===================================================================== */
-const filePath   = u=>`/drives/${driveId}/root:/${enc(u.folder+"/"+CFG.fileName)}`;
+const filePath   = u=>`/drives/${driveId}/root:/${enc(u.folder+"/"+u.file)}`;
 const folderPath = u=>`/drives/${driveId}/root:/${enc(u.folder)}`;
 
 async function download(meta){
@@ -894,7 +893,7 @@ async function openUnit(u){
       `Create a folder called <b>${esc(u.folder)}</b> in the Pipeline 2026 Documents library, then reload.`);
   if(res.status==="corrupt")
     return unitMessage(`${u.label}'s pipeline file couldn't be read.`,
-      `${esc(u.folder)}/${esc(CFG.fileName)} in SharePoint isn't valid. Open it there and restore an earlier version from Version history.`);
+      `${esc(u.folder)}/${esc(u.file)} in SharePoint isn't valid. Open it there and restore an earlier version from Version history.`);
   if(res.status==="ok"){ S=normalise(res.data,u); applyMeta(res.meta); sync.exists=true; }
   else { S=blankState(u); sync.candidates=res.candidates||[]; }
 
@@ -1406,7 +1405,7 @@ async function useCandidate(itemId){
     const p=JSON.parse(await download(meta));
     if(!p||!Array.isArray(p.deals)) throw new Error("not a pipeline file");
     S=normalise(p,U); save(); render();
-    toast(`Loaded ${meta.name}. Saving it as ${U.folder}/${CFG.fileName}.`);
+    toast(`Loaded ${meta.name}. Saving it as ${U.folder}/${U.file}.`);
   }catch(e){
     toast(`Couldn't use that file: ${e.message||e}`);
   }
