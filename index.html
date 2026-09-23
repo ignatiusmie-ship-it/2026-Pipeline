@@ -329,7 +329,7 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .linkbar .acts button{margin-left:0}
 
 .sum-totals{
-  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;
   background:var(--rule-soft);border:1px solid var(--rule);margin-bottom:22px;
 }
 .sum-totals div{background:var(--surface);padding:16px 18px}
@@ -362,6 +362,9 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .toast.on{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 
+@media(max-width:1200px){
+  .sum-totals{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 @media(max-width:900px){
   .sum-grid{grid-template-columns:1fr}
   .sum-totals{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1096,8 +1099,8 @@ async function openAll(silent){
   renderAll(results);
 }
 
-/* "Active in market" = deals genuinely in execution */
-const ACTIVE_STAGES=["dd","live","book"];
+/* "Active in market" = deals at the Live stage */
+const ACTIVE_STAGES=["live"];
 function unitStats(u,s){
   const stageCounts=u.stages.map(st=>({st, n:s.deals.filter(d=>d.stage===st.id).length}));
   return {
@@ -1111,13 +1114,13 @@ function unitStats(u,s){
 }
 
 function renderAll(results){
-  const T={deals:0,active:0,mandated:0,ev:0,closed:0,won:0}; let reporting=0;
+  const T={deals:0,closures:0,active:0,mandated:0,ev:0,closed:0,won:0}; let reporting=0;
   const cards=results.map(({u,res})=>{
     const head=(right)=>`<header><span class="ubadge">${esc(u.label)}</span><span class="upd">${right}</span></header>`;
     if(res.status==="ok"){
       const s=normalise(res.data,u), st=unitStats(u,s); reporting++;
       const cur=u.currency||"$";
-      T.deals+=st.deals; T.active+=st.active; T.mandated+=st.mandated; T.ev+=st.ev; T.closed+=st.closed;
+      T.deals+=st.deals; T.closures+=st.closures; T.active+=st.active; T.mandated+=st.mandated; T.ev+=st.ev; T.closed+=st.closed;
       T.won+=(st.ea.find(e=>e.k==="won")||{n:0}).n;
       const by=(res.meta.lastModifiedBy&&res.meta.lastModifiedBy.user&&res.meta.lastModifiedBy.user.displayName)||"";
       const segs=st.stageCounts.filter(x=>x.st.id!=="mandated"&&x.n>0);
@@ -1146,7 +1149,8 @@ function renderAll(results){
   $("#allView").innerHTML=`
     <div class="sum-totals">
       <div><b>${T.mandated}</b><small>Signed mandates</small></div>
-      <div title="Deals at DD, Live or Book building"><b>${T.active}</b><small>Active in market</small></div>
+      <div title="Deals at the Closure stage"><b>${T.closures}</b><small>Deal Closures</small></div>
+      <div title="Deals at the Live stage"><b>${T.active}</b><small>Active in market</small></div>
       <div><b>${money(T.ev)}</b><small>Tracked EV</small></div>
       <div><b>${money(T.closed)}</b><small>Closed EV</small></div>
       <div><b>${T.won}</b><small>EA<span class="lc">s</span> won</small></div>
