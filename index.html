@@ -1,0 +1,1426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>H1–H2 2026 Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#E7EAEF;
+  --surface:#FFFFFF;
+  --ink:#0F1B2E;
+  --ink-2:#33435C;
+  --muted:#6B7A91;
+  --rule:#D2D8E1;
+  --rule-soft:#E5E9EF;
+  --signal:#D22630;
+
+  --s-closure:#12994B;
+  --s-mandated:#6E7A8C;
+  --s-dd:#E3A400;
+  --s-live:#6B2FA0;
+  --s-book:#0E7490;
+  --s-passive:#9AA7B8;
+
+  --won:#12994B;
+  --lost:#D22630;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--canvas);
+  color:var(--ink);
+  font-family:"Lato",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:14px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  padding:0 0 64px;
+}
+.wrap{max-width:1400px;margin:0 auto;padding:0 22px}
+
+/* ---------- masthead ---------- */
+.masthead{
+  background:var(--ink);
+  color:#fff;
+  border-bottom:5px solid var(--signal);
+  padding:22px 0 20px;
+  margin-bottom:22px;
+}
+.mast-grid{display:flex;flex-wrap:wrap;align-items:flex-end;gap:28px;justify-content:space-between}
+.title{
+  font-size:clamp(28px,4.4vw,46px);
+  font-weight:900;
+  letter-spacing:-.015em;
+  line-height:.95;
+  margin:0;
+}
+.unit{
+  display:inline-block;font-size:11px;font-weight:900;letter-spacing:.16em;
+  text-transform:uppercase;background:var(--signal);color:#fff;
+  padding:3px 10px;margin-bottom:10px;border-radius:2px;
+}
+.title span.accent{color:var(--signal)}
+.title [contenteditable]:hover{box-shadow:inset 0 -2px 0 rgba(255,255,255,.35)}
+.title [contenteditable]:focus{background:rgba(255,255,255,.1);box-shadow:inset 0 -2px 0 var(--signal)}
+
+/* ---------- toolbar ---------- */
+.toolbar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  margin-bottom:10px;
+}
+.linkbar{
+  display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--rule);
+  padding:8px 12px;margin:0 0 22px;
+}
+.linkbar .dot{width:7px;height:7px;border-radius:50%;background:var(--s-mandated);flex:none}
+.linkbar.on .dot{background:var(--s-closure)}
+.linkbar b{color:var(--ink);font-weight:700}
+.linkbar button{margin-left:auto;padding:4px 10px;font-size:11.5px}
+button{
+  font-family:inherit;font-size:12.5px;font-weight:700;
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);
+  padding:7px 13px;border-radius:2px;cursor:pointer;
+}
+button:hover{border-color:var(--ink-2);color:var(--ink)}
+button:focus-visible,[contenteditable]:focus-visible,select:focus-visible,input:focus-visible{
+  outline:2px solid var(--signal);outline-offset:1px;
+}
+button.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+button.primary:hover{background:#1c2c45}
+button.danger:hover{border-color:var(--signal);color:var(--signal)}
+.saved{font-size:11px;color:var(--muted);min-width:78px}
+
+/* ---------- pipeline rail ---------- */
+.rail{
+  display:grid;
+  grid-template-columns:repeat(var(--n,6),minmax(0,1fr));
+  gap:2px;
+  background:var(--rule-soft);
+  border:1px solid var(--rule);
+  margin-bottom:26px;
+}
+.stage{background:var(--surface);display:flex;flex-direction:column;min-height:210px}
+.stage-cap{
+  padding:7px 12px;color:#fff;font-size:11px;font-weight:700;
+  letter-spacing:.085em;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.stage-cap .n{font-size:15px;font-weight:900;letter-spacing:0}
+.stage-body{padding:12px 12px 14px;flex:1;display:flex;flex-direction:column;gap:7px}
+.chip{
+  border-left:3px solid var(--c);
+  padding:5px 0 5px 9px;
+  cursor:pointer;
+  background:none;border-top:0;border-right:0;border-bottom:0;
+  text-align:left;width:100%;
+}
+.chip:hover{background:#F4F6F9}
+.chip .nm{
+  font-family:"Lato",Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;color:var(--ink);
+  display:block;line-height:1.25;
+}
+.chip .meta{font-size:10.5px;color:var(--muted);display:block;margin-top:2px}
+.bulk{padding:14px 12px;text-align:center}
+.bulk b{display:block;font-size:44px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.bulk small{font-size:11px;color:var(--muted)}
+.bulk input{
+  font-family:inherit;font-size:40px;font-weight:900;width:100%;text-align:center;
+  border:0;border-bottom:1px dashed var(--rule);background:none;color:var(--ink);
+  letter-spacing:-.02em;padding:0;
+}
+
+/* ---------- layout ---------- */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+
+.panel{background:var(--surface);border:1px solid var(--rule)}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:11px 14px;border-bottom:1px solid var(--rule);
+}
+.panel-head h2{
+  margin:0;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);
+}
+
+/* ---------- table ---------- */
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:840px}
+th{
+  background:var(--signal);color:#fff;text-align:left;
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  padding:9px 10px;white-space:nowrap;cursor:pointer;user-select:none;
+}
+th:hover{background:#b91d26}
+th [data-col][contenteditable]{background:rgba(255,255,255,.22);padding:0 3px;outline:none}
+th .arrow{opacity:.55;font-size:9px}
+td{
+  padding:8px 10px;border-bottom:1px solid var(--rule-soft);
+  font-size:13.5px;vertical-align:top;
+}
+tbody tr:hover{background:#F6F8FA}
+tr.is-closed td{background:#EAF7EF}
+tr.is-closed:hover td{background:#E1F2E8}
+.idx{
+  font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px;font-weight:700;
+  width:34px;text-align:right;
+}
+.proj{font-size:14px;font-weight:700;line-height:1.3;min-width:150px}
+.ev{font-variant-numeric:tabular-nums;font-weight:700;text-align:right;white-space:nowrap}
+.dt{white-space:nowrap;font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.buyer{font-size:13px;color:var(--ink-2);min-width:150px}
+.status{min-width:170px;font-size:12.5px}
+td select{
+  font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border:0;border-radius:2px;padding:3px 5px;color:#fff;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+}
+.rowdel{
+  border:0;background:none;color:var(--rule);font-size:15px;padding:0 4px;cursor:pointer;line-height:1;
+}
+tr:hover .rowdel{color:var(--muted)}
+.rowdel:hover{color:var(--signal)}
+tfoot td{
+  border-top:2px solid var(--ink);border-bottom:0;font-weight:700;font-size:13px;
+  background:#F4F6F9;
+}
+
+/* ---------- EA scoreboard ---------- */
+.ea{margin-bottom:0}
+.ea-row{display:grid;grid-template-columns:repeat(var(--n,3),1fr);border-bottom:1px solid var(--rule)}
+.ea-cell{padding:12px 8px 10px;border-right:1px solid var(--rule-soft);text-align:center}
+.ea-cell:last-child{border-right:0}
+.ea-cell b{display:block;font-size:28px;font-weight:900;letter-spacing:-.02em;line-height:1}
+.ea-cell small{font-size:10px;letter-spacing:.04em;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.ea-list{padding:10px 12px 12px}
+.ea-list h3{
+  margin:0 0 6px;gap:6px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;display:flex;justify-content:space-between;align-items:center;
+}
+.ea-list h3 [data-eatitle]{flex:1;text-align:left}
+.ea-list h3 button{padding:1px 6px;font-size:15px;line-height:1.1;color:var(--muted)}
+.ea-item{
+  display:flex;align-items:baseline;gap:6px;padding:3px 0;
+  border-bottom:1px dotted var(--rule-soft);
+}
+.ea-item:last-child{border-bottom:0}
+.ea-item .dot{width:5px;height:5px;border-radius:50%;flex:none;transform:translateY(-2px)}
+.ea-item span[contenteditable]{
+  font-size:13.5px;flex:1;line-height:1.35;
+}
+.ea-item .x{border:0;background:none;color:var(--rule);cursor:pointer;font-size:13px;padding:0 2px}
+.ea-item:hover .x{color:var(--muted)}
+.ea-item .x:hover{color:var(--signal)}
+.ea-list + .ea-list{border-top:1px solid var(--rule-soft)}
+
+/* ---------- editor drawer ---------- */
+.drawer{
+  position:fixed;top:0;right:0;height:100%;width:340px;background:var(--surface);
+  border-left:1px solid var(--rule);box-shadow:-18px 0 44px rgba(15,27,46,.16);
+  padding:20px;overflow-y:auto;z-index:40;
+  transform:translateX(102%);transition:transform .22s ease;
+}
+.drawer.open{transform:none}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.drawer h2{margin:0 0 2px;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.drawer .kicker{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:16px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
+.field input,.field select,.field textarea{
+  width:100%;font-family:inherit;font-size:13.5px;padding:7px 9px;
+  border:1px solid var(--rule);background:#FBFCFD;border-radius:2px;color:var(--ink);
+}
+.field textarea{min-height:62px;resize:vertical}
+.drawer-actions{display:flex;gap:8px;margin-top:18px}
+.scrim{position:fixed;inset:0;background:rgba(15,27,46,.28);z-index:30;display:none}
+.scrim.on{display:block}
+
+.chip[draggable="true"]{cursor:grab}
+.idx[draggable="true"]{cursor:grab}
+.ea-item .dot[draggable="true"]{cursor:grab;width:7px;height:7px}
+.dragging{opacity:.35}
+.stage-body.drop-in{background:#F1F4F8;outline:2px dashed var(--rule);outline-offset:-4px}
+.ea-list.drop-in{background:#F1F4F8}
+.ea-list.drop-before{box-shadow:0 -2px 0 var(--signal)}
+.grip{
+  cursor:grab;color:var(--rule);font-size:12px;line-height:1;
+  margin-right:5px;letter-spacing:-1px;user-select:none;
+}
+.ea-list:hover .grip{color:var(--muted)}
+.chip.drop-before{box-shadow:0 -2px 0 var(--signal)}
+.ea-item.drop-before{box-shadow:0 -2px 0 var(--signal)}
+tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
+#stageSel{
+  margin-left:auto;font-family:inherit;font-size:11.5px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);
+  background:#FBFCFD;border:1px solid var(--rule);border-radius:2px;
+  padding:5px 8px;cursor:pointer;min-width:150px;
+}
+#stageSel:hover{border-color:var(--ink-2)}
+#stageSel.on{color:#fff;border-color:transparent}
+.stage-cap[data-filter]{cursor:pointer;user-select:none}
+.stage.dim{opacity:.45}
+.pill{
+  display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:#fff;padding:3px 7px;border-radius:2px;white-space:nowrap;
+}
+[contenteditable]{outline:none;border-radius:2px}
+[contenteditable]:hover{box-shadow:inset 0 -1px 0 var(--rule)}
+[contenteditable]:focus{background:#FFF8DC;box-shadow:inset 0 -1px 0 var(--signal)}
+[contenteditable]:empty:before{content:attr(data-ph);color:#B6C0CD}
+
+.footnote{font-size:11.5px;color:var(--muted);margin-top:16px;max-width:70ch}
+
+@media(max-width:1080px){
+  .cols{grid-template-columns:1fr}
+  .rail{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .rail{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .drawer{width:100%}
+}
+@media print{
+  body{background:#fff;padding:0}
+  .toolbar,.rowdel,.drawer,.scrim,.ea-list h3 button,.ea-item .x{display:none!important}
+  .masthead{background:#fff;color:var(--ink);border-bottom:3px solid var(--signal)}
+    .panel,.rail{border-color:#bbb;break-inside:avoid}
+}
+
+/* ---------- portal additions ---------- */
+.cols.wide{grid-template-columns:minmax(0,1fr) 360px}
+.ea-row.many .ea-cell{padding:12px 3px 10px}
+.ea-row.many .ea-cell b{font-size:22px}
+.ea-row.many .ea-cell small{font-size:9px;letter-spacing:.04em}
+.ro .edit-only{display:none!important}
+.empty-col{font-size:12px;color:var(--muted);padding:4px 0}
+
+.topnav{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.topnav[hidden]{display:none}
+.navunits{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.navunits a{
+  color:#C9D3E1;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:7px 13px;border:1px solid rgba(255,255,255,.18);border-radius:2px;
+}
+.navunits a:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+.navunits a.on{background:var(--signal);border-color:var(--signal);color:#fff}
+.navunits a:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.me{display:flex;align-items:center;gap:8px;font-size:12px;color:#A9B6C9}
+.me .av{
+  width:24px;height:24px;border-radius:50%;background:#2A3B57;color:#fff;font-size:10.5px;
+  font-weight:700;display:inline-flex;align-items:center;justify-content:center;
+}
+.me button{background:none;border:1px solid rgba(255,255,255,.22);color:#C9D3E1;padding:3px 9px;font-size:11px}
+.me button:hover{color:#fff;border-color:rgba(255,255,255,.55)}
+
+.gate{max-width:480px;margin:56px auto;background:var(--surface);border:1px solid var(--rule);padding:30px 32px}
+.gate h2{margin:0 0 8px;font-size:22px;font-weight:900;letter-spacing:-.01em}
+.gate p{margin:0 0 20px;color:var(--ink-2)}
+.gate button{padding:9px 16px;font-size:13px}
+.loading{padding:48px 0;text-align:center;color:var(--muted);font-size:13px}
+
+.linkbar.warn .dot{background:var(--s-dd)}
+.linkbar.bad{border-color:#F0B9BC;background:#FFF6F6}
+.linkbar.bad .dot{background:var(--signal)}
+.linkbar .acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.linkbar .acts button{margin-left:0}
+
+.sum-totals{
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
+  background:var(--rule-soft);border:1px solid var(--rule);margin-bottom:22px;
+}
+.sum-totals div{background:var(--surface);padding:16px 18px}
+.sum-totals b{display:block;font-size:30px;font-weight:900;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.sum-totals small{display:block;margin-top:7px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.sum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.ucard{display:block;background:var(--surface);border:1px solid var(--rule);text-decoration:none;color:inherit}
+.ucard:hover{border-color:var(--ink-2)}
+.ucard:focus-visible{outline:2px solid var(--signal);outline-offset:1px}
+.ucard header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--rule-soft)}
+.ubadge{background:var(--signal);color:#fff;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;padding:3px 10px;border-radius:2px}
+.upd{font-size:11.5px;color:var(--muted);margin-left:auto;text-align:right}
+.unums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:14px 16px 4px}
+.unums b{display:block;font-size:24px;font-weight:900;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.unums small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.ubar{display:flex;height:8px;margin:12px 16px 9px;background:var(--rule-soft)}
+.ubar span{display:block;height:8px}
+.ulegend{display:flex;flex-wrap:wrap;gap:4px 14px;padding:0 16px 12px;font-size:12px;color:var(--ink-2)}
+.ulegend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.uea{border-top:1px solid var(--rule-soft);padding:10px 16px;font-size:12px;color:var(--ink-2)}
+.uea b{color:var(--ink);font-variant-numeric:tabular-nums}
+.uempty{padding:24px 16px;color:var(--muted);font-size:13px}
+.sum-note{font-size:11.5px;color:var(--muted);margin-top:16px}
+
+.toast{
+  position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:10px 16px;font-size:13px;
+  z-index:60;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;
+}
+.toast.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+@media(max-width:900px){
+  .sum-grid{grid-template-columns:1fr}
+  .sum-totals{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .topnav{align-items:flex-start}
+  .navunits{justify-content:flex-start}
+}
+@media print{
+  .topnav,.linkbar,.toast{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="masthead">
+  <div class="wrap mast-grid">
+    <div>
+      <div class="unit" id="unitBadge">Pipeline</div>
+      <h1 class="title"><span id="titleMain" data-meta="title" data-ph="Title">H1–H2 2026</span> <span class="accent" id="titleAccent" data-meta="accent" data-ph="…">Pipeline</span></h1>
+    </div>
+    <nav class="topnav" id="topnav" aria-label="Business units" hidden>
+      <div class="navunits" id="nav">
+        <a href="#all" data-view="all">All units</a>
+        <a href="#us" data-view="us">US</a>
+        <a href="#uk" data-view="uk">UK</a>
+        <a href="#saas" data-view="saas">SaaS</a>
+        <a href="#india" data-view="india">India</a>
+      </div>
+      <div class="me"><span class="av" id="avatar"></span><span id="meName"></span><button id="signOut">Sign out</button></div>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="gate" id="gate" hidden></section>
+  <div class="loading" id="loading" hidden></div>
+
+  <section id="unitView" hidden>
+    <section class="gate" id="unitMsg" hidden></section>
+    <div id="unitBody">
+      <div class="toolbar">
+        <button class="primary edit-only" id="addDeal">Add deal</button>
+        <button id="exportBtn">Save a copy</button>
+        <button id="csvBtn">Open in Excel</button>
+        <button class="edit-only" id="importBtn">Load a copy</button>
+        <button id="printBtn">Print</button>
+      </div>
+      <div class="linkbar" id="linkbar"><span class="dot"></span><span>Loading…</span></div>
+
+      <div class="rail" id="rail"></div>
+
+      <div class="cols" id="cols">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 data-meta="registerTitle" data-ph="Heading" id="registerTitle">Deals</h2>
+            <select id="stageSel" aria-label="Filter by stage"></select>
+          </div>
+          <div class="tscroll">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:34px"><span data-col="idx"></span></th>
+                  <th data-sort="project"><span data-col="project"></span> <span class="arrow"></span></th>
+                  <th data-sort="buyer"><span data-col="buyer"></span> <span class="arrow"></span></th>
+                  <th data-sort="stage"><span data-col="stage"></span> <span class="arrow"></span></th>
+                  <th data-sort="status"><span data-col="status"></span> <span class="arrow"></span></th>
+                  <th data-sort="start"><span data-col="start"></span> <span class="arrow"></span></th>
+                  <th data-sort="ev" style="text-align:right"><span data-col="ev"></span> <span class="arrow"></span></th>
+                  <th style="width:28px"></th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+              <tfoot id="tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel ea">
+            <div class="panel-head"><h2>Engagement agreements - 2026</h2></div>
+            <div class="ea-row" id="eaCounts"></div>
+            <div id="eaLists"></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="footnote">Changes save to the Pipeline 2026 SharePoint site as you work. Colleagues see them within a minute.</p>
+    </div>
+  </section>
+
+  <section id="allView" hidden></section>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Deal editor">
+  <div class="kicker" id="drawerKicker">Edit deal</div>
+  <h2 id="drawerTitle">—</h2>
+  <div class="field"><label for="f-project">Project</label><input id="f-project"></div>
+  <div class="field"><label for="f-buyer" id="f-buyer-label">Buyer</label><input id="f-buyer"></div>
+  <div class="field"><label for="f-stage">Stage</label><select id="f-stage"></select></div>
+  <div class="field"><label for="f-status">Status / closure</label><input id="f-status"></div>
+  <div class="field"><label for="f-start">Start date</label><input id="f-start"></div>
+  <div class="field"><label for="f-ev">Enterprise value</label><input id="f-ev" placeholder="$25M"></div>
+  <div class="field"><label for="f-note">Notes</label><textarea id="f-note" placeholder="Rev. $55M, EBITDA $11M"></textarea></div>
+  <div class="drawer-actions">
+    <button class="primary" id="f-save" style="flex:1">Save changes</button>
+    <button class="danger" id="f-del">Delete</button>
+  </div>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.30.0/lib/msal-browser.min.js" crossorigin="anonymous"></script>
+<script>
+"use strict";
+/* =====================================================================
+   CONFIG — your tenant, app registration and SharePoint site
+   ===================================================================== */
+const CFG = {
+  clientId: "af12467f-e4aa-4998-aa00-4b0d338083cd",
+  tenantId: "be5c3fcd-0bc7-4023-a37e-2c6ed6bc4f92",
+  siteHost: "settlucasglobal.sharepoint.com",
+  sitePath: "/sites/Pipeline2026",
+  fileName: "pipeline.json",
+  scopes: ["User.Read", "Sites.ReadWrite.All"],
+  pollSeconds: 60
+};
+const GRAPH = "https://graph.microsoft.com/v1.0";
+
+/* =====================================================================
+   BUSINESS UNITS — the only place their differences are defined
+   ===================================================================== */
+const BASE_STAGES = [
+  {id:"closure",  label:"Closure",       color:"var(--s-closure)"},
+  {id:"mandated", label:"Mandated",      color:"var(--s-mandated)"},
+  {id:"dd",       label:"DD",            color:"var(--s-dd)"},
+  {id:"live",     label:"Live",          color:"var(--s-live)"},
+  {id:"book",     label:"Book building", color:"var(--s-book)"},
+  {id:"passive",  label:"Passive",       color:"var(--s-passive)"}
+];
+const TERMINATED = {id:"terminated", label:"Terminated", color:"var(--s-terminated)"};
+
+const EA_DEF = {
+  won:  {short:"EA won",      title:"EA won",                     color:"var(--won)"},
+  sent: {short:"EA sent",     title:"EA sent / mandate pipeline", color:"var(--s-mandated)"},
+  nda:  {short:"NDA",         title:"NDA sent / NDA discussion",  color:"var(--s-dd)"},
+  yet:  {short:"Yet to send", title:"Yet to send",                color:"var(--s-passive)"},
+  lost: {short:"EA lost",     title:"EA lost",                    color:"var(--lost)"}
+};
+const COL_DEFAULTS = {idx:"#", project:"Project", buyer:"Buyer", stage:"Stage",
+                      status:"Status / closure", start:"Start date", ev:"EV"};
+
+const UNITS = [
+  {id:"us",    label:"US",    folder:"US",    stages:BASE_STAGES,
+   ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
+  {id:"uk",    label:"UK",    folder:"UK",    stages:BASE_STAGES,
+   ea:["won","sent","lost"], eaEdit:true,  eaDrag:true,  colEdit:false},
+  {id:"saas",  label:"SaaS",  folder:"SaaS",  stages:[...BASE_STAGES, TERMINATED],
+   ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
+  {id:"india", label:"India", folder:"India", stages:BASE_STAGES,
+   ea:["won","sent","nda","yet","lost"], eaEdit:true, eaDrag:true, colEdit:true,
+   cols:{buyer:"Transaction Type"}}
+];
+const UNIT_BY_ID = Object.fromEntries(UNITS.map(u=>[u.id,u]));
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+let msalApp=null, account=null, driveId=null;
+let view=null, navSeq=0;
+let U=null, S=null, SC={};
+let sync=freshSync();
+let editVer=0, saveTimer=null, pollTimer=null;
+let sortBy=null, sortDir=1, stageFilter=null, editing=null, drag=null;
+const noWrite=new Set();            // units this person turned out to be view-only on
+
+function freshSync(){
+  return {itemId:null, eTag:null, exists:false, dirty:false, saving:false, error:null,
+          conflict:false, canEdit:true, byName:"", at:null, candidates:[], theirName:"", theirAt:null};
+}
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = ev=>{ const m=String(ev||"").replace(/,/g,"").match(/([\d.]+)/); return m?parseFloat(m[1]):0; };
+const money = n=>"$"+(Math.round(n*10)/10).toString().replace(/\.0$/,"")+"M";
+const RO = ()=>!sync.canEdit;
+const ED = ()=>RO() ? "" : "contenteditable";
+const enc = p=>p.split("/").map(encodeURIComponent).join("/");
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+
+function ago(iso){
+  if(!iso) return "";
+  const s=(Date.now()-Date.parse(iso))/1000;
+  if(s<60) return "just now";
+  if(s<3600) return Math.floor(s/60)+" min ago";
+  if(s<86400) return Math.floor(s/3600)+" h ago";
+  return new Date(iso).toLocaleDateString([], {day:"numeric", month:"short", year:"numeric"});
+}
+let toastTimer;
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("on"),3200);
+}
+function show(id,on){ const el=$(id); if(el) el.hidden=!on; }
+function setLoading(msg){ const l=$("#loading"); l.textContent=msg; l.hidden=false; show("#unitView",false); show("#allView",false); }
+function hideLoading(){ $("#loading").hidden=true; }
+
+function gateCard(el,title,detail,btnLabel,btnAct){
+  el.innerHTML=`<h2>${esc(title)}</h2><p>${detail}</p>`+
+    (btnLabel?`<button class="primary" data-act="${btnAct}">${esc(btnLabel)}</button>`:"");
+  el.hidden=false;
+}
+function fatal(title,detail){
+  hideLoading(); show("#unitView",false); show("#allView",false);
+  gateCard($("#gate"),title,esc(detail),"Try again","reload");
+}
+
+/* =====================================================================
+   SIGN-IN (MSAL)
+   ===================================================================== */
+function redirectUri(){ return location.origin + location.pathname.replace(/index\.html$/,""); }
+
+async function boot(){
+  wireOnce();
+  if(location.protocol==="file:"){
+    fatal("Open this page from its web address.",
+      "Microsoft sign-in only works at https://ignatiusmie-ship-it.github.io/2026-Pipeline/, not from a file on your computer.");
+    return;
+  }
+  if(!window.msal){
+    fatal("Microsoft sign-in couldn't load.",
+      "Check your connection and reload. If it keeps happening, your network may be blocking cdn.jsdelivr.net.");
+    return;
+  }
+  msalApp=new msal.PublicClientApplication({
+    auth:{clientId:CFG.clientId, authority:"https://login.microsoftonline.com/"+CFG.tenantId,
+          redirectUri:redirectUri(), postLogoutRedirectUri:redirectUri(), navigateToLoginRequestUrl:false},
+    cache:{cacheLocation:"localStorage"}
+  });
+  try{
+    await msalApp.initialize();
+    const res=await msalApp.handleRedirectPromise();
+    if(res && res.account) msalApp.setActiveAccount(res.account);
+  }catch(e){
+    fatal("Sign-in didn't complete.", (e&&e.message)||String(e));
+    return;
+  }
+  account=msalApp.getActiveAccount() || msalApp.getAllAccounts()[0] || null;
+  if(account) msalApp.setActiveAccount(account);
+  if(!account){ showSignIn(); return; }
+  await startApp();
+}
+
+function showSignIn(){
+  hideLoading();
+  gateCard($("#gate"),"Pipeline 2026",
+    "Sign in with your Sett Lucas Microsoft account to see the business unit pipelines.",
+    "Sign in with Microsoft","signin");
+}
+function signIn(){
+  try{ sessionStorage.setItem("pp-route",location.hash); }catch(e){}
+  msalApp.loginRedirect({scopes:CFG.scopes});
+}
+
+async function token(){
+  try{
+    return (await msalApp.acquireTokenSilent({scopes:CFG.scopes, account})).accessToken;
+  }catch(e){
+    const code=(e&&e.errorCode)||"";
+    if((window.msal.InteractionRequiredAuthError && e instanceof window.msal.InteractionRequiredAuthError) ||
+       /interaction_required|login_required|consent_required|no_tokens_found/.test(code)){
+      try{ sessionStorage.setItem("pp-route",location.hash); }catch(_){}
+      await msalApp.acquireTokenRedirect({scopes:CFG.scopes, account});
+      return new Promise(()=>{});            // the page is navigating away
+    }
+    throw e;
+  }
+}
+async function graph(path,opts={}){
+  const t=await token();
+  const headers=Object.assign({Authorization:"Bearer "+t}, opts.headers||{});
+  return fetch(path.startsWith("http")?path:GRAPH+path, Object.assign({},opts,{headers}));
+}
+async function graphError(r,what){
+  let msg=""; try{ const j=await r.json(); msg=(j.error&&j.error.message)||""; }catch(e){}
+  const err=new Error(msg||("HTTP "+r.status));
+  if(r.status===401){ err.title="Your sign-in has expired."; err.detail="Reload the page to sign in again."; }
+  else if(r.status===403||r.status===404 && what==="site"){
+    err.title="You don't have access to Pipeline 2026.";
+    err.detail="Ask the site owner to add you to the Pipeline 2026 SharePoint site.";
+  }
+  else { err.title="SharePoint returned an error."; err.detail=(msg||"")+" (HTTP "+r.status+")"; }
+  return err;
+}
+
+/* =====================================================================
+   START-UP & ROUTING
+   ===================================================================== */
+async function startApp(){
+  show("#gate",false); show("#topnav",true);
+  const name=account.name||account.username||"";
+  $("#meName").textContent=name;
+  $("#avatar").textContent=name.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase()||"?";
+  setLoading("Connecting to SharePoint…");
+  try{
+    const r=await graph(`/sites/${CFG.siteHost}:${CFG.sitePath}`);
+    if(!r.ok) throw await graphError(r,"site");
+    const site=await r.json();
+    const d=await graph(`/sites/${site.id}/drive`);
+    if(!d.ok) throw await graphError(d,"drive");
+    driveId=(await d.json()).id;
+  }catch(e){
+    fatal(e.title||"Couldn't reach the Pipeline 2026 site.", e.detail||e.message||String(e));
+    return;
+  }
+  let saved=""; try{ saved=sessionStorage.getItem("pp-route")||""; sessionStorage.removeItem("pp-route"); }catch(e){}
+  if(saved && !routeFromHash()) history.replaceState(null,"",saved);
+  await go(routeFromHash()||"all");
+  startPolling();
+}
+
+function routeFromHash(){
+  const h=location.hash.replace(/^#/,"").toLowerCase();
+  return (h==="all"||UNIT_BY_ID[h]) ? h : "";
+}
+window.addEventListener("hashchange",()=>{
+  const r=routeFromHash();
+  if(r && r!==view && driveId) go(r);
+});
+async function go(id){
+  await flushSave();
+  view=id;
+  document.querySelectorAll("#nav a").forEach(a=>{
+    const on=a.dataset.view===id; a.classList.toggle("on",on);
+    if(on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
+  });
+  if(id==="all") await openAll(false); else await openUnit(UNIT_BY_ID[id]);
+}
+
+/* =====================================================================
+   SHAREPOINT FILES
+   ===================================================================== */
+const filePath   = u=>`/drives/${driveId}/root:/${enc(u.folder+"/"+CFG.fileName)}`;
+const folderPath = u=>`/drives/${driveId}/root:/${enc(u.folder)}`;
+
+async function download(meta){
+  const url=meta["@microsoft.graph.downloadUrl"];
+  if(url){
+    try{ const c=await fetch(url,{cache:"no-store"}); if(c.ok) return await c.text(); }catch(e){/* fall back */}
+  }
+  const r=await graph(`/drives/${driveId}/items/${meta.id}/content`,{cache:"no-store"});
+  if(!r.ok) throw new Error("Download failed (HTTP "+r.status+")");
+  return await r.text();
+}
+
+async function readUnit(u){
+  const r=await graph(filePath(u));
+  if(r.ok){
+    const meta=await r.json();
+    const txt=await download(meta);
+    try{ return {status:"ok", data:JSON.parse(txt), meta}; }
+    catch(e){ return {status:"corrupt", meta}; }
+  }
+  if(r.status===404){
+    const f=await graph(folderPath(u)+":/children?$top=200");
+    if(f.status===404) return {status:"nofolder"};
+    if(f.status===403) return {status:"noaccess"};
+    if(!f.ok) throw await graphError(f,"folder");
+    const kids=(await f.json()).value||[];
+    const candidates=kids.filter(k=>k.file && /\.json$/i.test(k.name))
+      .sort((a,b)=>Date.parse(b.lastModifiedDateTime)-Date.parse(a.lastModifiedDateTime));
+    return {status:"missing", candidates};
+  }
+  if(r.status===403) return {status:"noaccess"};
+  throw await graphError(r,"file");
+}
+
+function applyMeta(m){
+  sync.itemId=m.id; sync.eTag=m.eTag; sync.at=m.lastModifiedDateTime;
+  sync.byName=(m.lastModifiedBy&&m.lastModifiedBy.user&&m.lastModifiedBy.user.displayName)||"";
+}
+
+/* ---------- saving ---------- */
+function save(){
+  if(RO()||!U||!S) return;
+  editVer++; sync.dirty=true; setSyncBar();
+  clearTimeout(saveTimer); saveTimer=setTimeout(pushSave,1200);
+}
+function scheduleRetry(){ clearTimeout(saveTimer); saveTimer=setTimeout(pushSave,8000); }
+
+async function pushSave(opts={}){
+  clearTimeout(saveTimer);
+  if(!U||!S||RO()) return;
+  if(sync.saving) return;                                   /* the in-flight save re-checks when it lands */
+  if(sync.conflict && !opts.overwrite) return;
+  if(!sync.dirty) return;
+  const u=U, sent=editVer, body=JSON.stringify(S,null,2);
+  const headers={"Content-Type":"application/json"};
+  let url=filePath(u)+":/content";
+  if(sync.exists && sync.eTag && !opts.overwrite) headers["If-Match"]=sync.eTag;
+  if(!sync.exists) url+="?@microsoft.graph.conflictBehavior=fail";
+  sync.saving=true; setSyncBar();
+  let r;
+  try{ r=await graph(url,{method:"PUT",headers,body}); }
+  catch(e){ sync.saving=false; sync.error="network"; setSyncBar(); scheduleRetry(); return; }
+  sync.saving=false;
+  if(u!==U) return;
+  if(r.ok){
+    applyMeta(await r.json());
+    sync.exists=true; sync.error=null; sync.conflict=false;
+    sync.dirty = editVer!==sent;
+    if(sync.dirty) saveTimer=setTimeout(pushSave,400);
+    setSyncBar();
+    return;
+  }
+  if(r.status===412||r.status===409){ await enterConflict(); return; }
+  if(r.status===403){
+    noWrite.add(u.id); sync.dirty=false;
+    toast(`You can view ${u.label} but not edit it — that change wasn't saved.`);
+    await openUnit(u);
+    return;
+  }
+  if(r.status===401){ sync.error="auth"; setSyncBar(); return; }
+  sync.error="http "+r.status; setSyncBar(); scheduleRetry();
+}
+
+async function flushSave(){
+  clearTimeout(saveTimer);
+  let guard=0;
+  while(sync.saving && guard++<400) await sleep(50);
+  if(sync.dirty && !RO() && !sync.conflict && U) await pushSave();
+  guard=0;
+  while(sync.saving && guard++<400) await sleep(50);
+}
+
+async function enterConflict(){
+  clearTimeout(saveTimer);
+  sync.conflict=true; sync.exists=true;
+  try{
+    const r=await graph(filePath(U));
+    if(r.ok){ const m=await r.json();
+      sync.theirName=(m.lastModifiedBy&&m.lastModifiedBy.user&&m.lastModifiedBy.user.displayName)||"Someone";
+      sync.theirAt=m.lastModifiedDateTime; }
+  }catch(e){}
+  setSyncBar();
+}
+
+window.addEventListener("beforeunload",e=>{
+  if(sync.dirty||sync.saving){ e.preventDefault(); e.returnValue=""; }
+});
+
+/* ---------- live updates from colleagues ---------- */
+function startPolling(){
+  clearInterval(pollTimer);
+  pollTimer=setInterval(poll,CFG.pollSeconds*1000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) poll(); });
+}
+function busyEditing(){
+  const a=document.activeElement;
+  return !!(a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) ||
+         $("#drawer").classList.contains("open") || !!drag;
+}
+async function poll(){
+  if(document.hidden||!driveId) return;
+  if(view==="all"){ openAll(true); return; }
+  if(!U||sync.dirty||sync.saving||sync.conflict||busyEditing()) return;
+  try{
+    const r=await graph(filePath(U));
+    if(!r.ok) return;
+    const m=await r.json();
+    if(m.eTag===sync.eTag){ setSyncBar(); return; }
+    const u=U, res=await readUnit(u);
+    if(u!==U||res.status!=="ok"||sync.dirty||busyEditing()) return;
+    S=normalise(res.data,u); applyMeta(res.meta); sync.exists=true;
+    render();
+    toast(`${u.label} was just updated by ${sync.byName||"a colleague"}.`);
+  }catch(e){/* quiet: next poll will try again */}
+}
+
+/* =====================================================================
+   DATA SHAPE
+   ===================================================================== */
+function blankState(u){
+  return {title:"H1–H2 2026", accent:"Pipeline", registerTitle:"Deals", mandated:0, deals:[],
+          ea:Object.fromEntries(u.ea.map(k=>[k,[]])),
+          eaTitles:Object.fromEntries(u.ea.map(k=>[k,EA_DEF[k].title])),
+          eaOrder:[...u.ea], cols:Object.assign({},COL_DEFAULTS,u.cols||{})};
+}
+/* accepts files saved by any earlier version of the dashboards */
+function normalise(d,u){
+  const b=blankState(u);
+  const s=Object.assign({}, b, (d&&typeof d==="object")?d:{});
+  const valid=new Set(u.stages.map(x=>x.id));
+  s.deals=(Array.isArray(s.deals)?s.deals:[]).filter(x=>x&&typeof x==="object");
+  s.deals.forEach((x,i)=>{
+    if(!x.id) x.id="d"+Date.now().toString(36)+i;
+    if(!valid.has(x.stage)) x.stage="passive";
+    ["project","buyer","status","start","ev","note"].forEach(f=>{ x[f]=x[f]==null?"":String(x[f]); });
+  });
+  s.ea=Object.assign({}, s.ea||{});
+  u.ea.forEach(k=>{ if(!Array.isArray(s.ea[k])) s.ea[k]=[]; s.ea[k]=s.ea[k].map(v=>String(v??"")); });
+  s.eaTitles=Object.assign({}, b.eaTitles, s.eaTitles||{});
+  const o=(Array.isArray(s.eaOrder)?s.eaOrder:[]).filter(k=>u.ea.includes(k));
+  u.ea.forEach(k=>{ if(!o.includes(k)) o.push(k); });
+  s.eaOrder=o;
+  s.cols=Object.assign({}, COL_DEFAULTS, u.cols||{}, s.cols||{});
+  s.mandated=Math.max(0, parseInt(s.mandated,10)||0);
+  ["title","accent","registerTitle"].forEach(k=>{ if(typeof s[k]!=="string"||!s[k].trim()) s[k]=b[k]; });
+  delete s.note; delete s.unit;
+  return s;
+}
+
+/* =====================================================================
+   UNIT VIEW
+   ===================================================================== */
+async function openUnit(u){
+  const seq=++navSeq;
+  U=u; S=null; SC=Object.fromEntries(u.stages.map(s=>[s.id,s]));
+  sortBy=null; sortDir=1; stageFilter=null; closeDrawer();
+  sync=freshSync(); sync.canEdit=!noWrite.has(u.id);
+  setLoading(`Loading ${u.label}…`);
+  let res;
+  try{ res=await readUnit(u); }
+  catch(e){ if(seq===navSeq) unitMessage(e.title||`Couldn't load ${u.label}.`, esc(e.detail||e.message||String(e))); return; }
+  if(seq!==navSeq) return;
+  if(res.status==="noaccess")
+    return unitMessage(`You don't have access to ${u.label}.`,
+      `Ask the Pipeline 2026 site owner for access to the <b>${esc(u.folder)}</b> folder.`);
+  if(res.status==="nofolder")
+    return unitMessage(`The ${u.folder} folder is missing.`,
+      `Create a folder called <b>${esc(u.folder)}</b> in the Pipeline 2026 Documents library, then reload.`);
+  if(res.status==="corrupt")
+    return unitMessage(`${u.label}'s pipeline file couldn't be read.`,
+      `${esc(u.folder)}/${esc(CFG.fileName)} in SharePoint isn't valid. Open it there and restore an earlier version from Version history.`);
+  if(res.status==="ok"){ S=normalise(res.data,u); applyMeta(res.meta); sync.exists=true; }
+  else { S=blankState(u); sync.candidates=res.candidates||[]; }
+
+  hideLoading(); show("#allView",false); show("#unitView",true);
+  show("#unitMsg",false); show("#unitBody",true);
+  render(); setSyncBar();
+}
+function unitMessage(title,html){
+  hideLoading(); show("#allView",false); show("#unitView",true);
+  show("#unitBody",false);
+  gateCard($("#unitMsg"),title,html,"Reload","reload");
+  renderHead();
+}
+
+function render(){
+  if(!U||!S) return;
+  document.body.classList.toggle("ro",RO());
+  renderHead(); renderCols(); renderRail(); renderTable(); renderEA();
+}
+
+function renderHead(){
+  const badge=$("#unitBadge"), t=$("#titleMain"), a=$("#titleAccent"), reg=$("#registerTitle");
+  if(view==="all"||!S){
+    badge.textContent = view==="all" ? "All units" : (U?U.label:"Pipeline");
+    if(document.activeElement!==t) t.textContent=S?S.title:"H1–H2 2026";
+    if(document.activeElement!==a) a.textContent=S?S.accent:"Pipeline";
+    [t,a].forEach(el=>el.removeAttribute("contenteditable"));
+    return;
+  }
+  badge.textContent=U.label;
+  [[t,"title"],[a,"accent"],[reg,"registerTitle"]].forEach(([el,k])=>{
+    if(document.activeElement!==el && el.textContent!==S[k]) el.textContent=S[k];
+    if(RO()) el.removeAttribute("contenteditable"); else el.setAttribute("contenteditable","true");
+  });
+  document.title=`${U.label} — ${S.title} ${S.accent}`;
+}
+
+function renderCols(){
+  document.querySelectorAll("[data-col]").forEach(el=>{
+    const k=el.dataset.col;
+    if(document.activeElement!==el && el.textContent!==S.cols[k]) el.textContent=S.cols[k];
+    const th=el.closest("th");
+    if(th && th.dataset.sort) th.title = (U.colEdit&&!RO()) ? "Click to sort · double-click to rename" : "Click to sort";
+  });
+  $("#f-buyer-label").textContent=S.cols.buyer;
+}
+
+function renderRail(){
+  const rail=$("#rail");
+  rail.style.setProperty("--n",U.stages.length);
+  rail.innerHTML=U.stages.map(s=>{
+    const items=S.deals.filter(d=>d.stage===s.id);
+    let body;
+    if(s.id==="mandated"){
+      body=`<div class="bulk">
+        <input id="mandCount" type="number" min="0" value="${S.mandated}" ${RO()?"readonly":""} aria-label="Mandated projects count">
+        <small>signed mandates in market</small></div>`+items.map(chip).join("");
+    }else{
+      body=items.length?items.map(chip).join(""):`<div class="empty-col">Nothing here yet.</div>`;
+    }
+    return `<section class="stage${stageFilter&&stageFilter!==s.id?" dim":""}">
+      <header class="stage-cap" style="background:${s.color}" data-filter="${s.id}"
+        title="${stageFilter===s.id?"Show all deals":"Show only "+esc(s.label)+" deals"}">
+        <span>${esc(s.label)}</span><span class="n">${s.id==="mandated"?S.mandated:items.length}</span>
+      </header>
+      <div class="stage-body" data-stage="${s.id}">${body}</div>
+    </section>`;
+  }).join("");
+  const mc=$("#mandCount");
+  if(mc && !RO()) mc.addEventListener("change",e=>{ S.mandated=Math.max(0,+e.target.value||0); save(); render(); });
+}
+function chip(d){
+  return `<button class="chip" data-open="${d.id}" ${RO()?"":'draggable="true"'} data-drag-deal="${d.id}" style="--c:${SC[d.stage].color}">
+    <span class="nm">${esc(d.project)||"Untitled"}</span>
+    <span class="meta">${esc(d.note||d.buyer||d.status||"")}</span>
+  </button>`;
+}
+
+function visibleDeals(){
+  let rows = stageFilter ? S.deals.filter(d=>d.stage===stageFilter) : [...S.deals];
+  if(sortBy){
+    const order=U.stages.map(s=>s.id);
+    rows.sort((a,b)=>{
+      if(sortBy==="ev") return (num(a.ev)-num(b.ev))*sortDir;
+      if(sortBy==="start") return ((Date.parse(a.start)||0)-(Date.parse(b.start)||0))*sortDir;
+      if(sortBy==="stage") return (order.indexOf(a.stage)-order.indexOf(b.stage))*sortDir;
+      return String(a[sortBy]||"").localeCompare(String(b[sortBy]||""))*sortDir;
+    });
+  }
+  return rows;
+}
+
+function renderTable(){
+  const rows=visibleDeals();
+  const canDrag=!RO() && !sortBy;
+  $("#tbody").innerHTML = rows.map((d,i)=>`
+    <tr class="${d.stage==="closure"?"is-closed":""}" data-row="${d.id}">
+      <td class="idx" ${canDrag?`draggable="true" data-drag-row="${d.id}" title="Drag to reorder"`:""}>${i+1}</td>
+      <td class="proj" ${ED()} data-id="${d.id}" data-f="project" data-ph="Project name">${esc(d.project)}</td>
+      <td class="buyer" ${ED()} data-id="${d.id}" data-f="buyer" data-ph="${esc(S.cols.buyer)}">${esc(d.buyer)}</td>
+      <td>${RO()
+        ? `<span class="pill" style="background:${SC[d.stage].color}">${esc(SC[d.stage].label)}</span>`
+        : `<select data-id="${d.id}" data-f="stage" style="background:${SC[d.stage].color}" aria-label="Stage">
+             ${U.stages.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${esc(s.label)}</option>`).join("")}
+           </select>`}</td>
+      <td class="status" ${ED()} data-id="${d.id}" data-f="status" data-ph="Status">${esc(d.status)}</td>
+      <td class="dt" ${ED()} data-id="${d.id}" data-f="start" data-ph="—">${esc(d.start)}</td>
+      <td class="ev" ${ED()} data-id="${d.id}" data-f="ev" data-ph="—">${esc(d.ev)}</td>
+      <td>${RO()?"":`<button class="rowdel" data-del="${d.id}" title="Delete deal" aria-label="Delete deal">×</button>`}</td>
+    </tr>`).join("") || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">${
+      stageFilter
+        ? `No deals at ${esc(SC[stageFilter].label)} stage. Choose “All stages” to see the other ${S.deals.length}.`
+        : RO() ? `No deals recorded for ${esc(U.label)} yet.` : `No deals yet — click <b>Add deal</b> to start this pipeline.`
+    }</td></tr>`;
+
+  $("#tfoot").innerHTML = rows.length
+    ? `<tr><td></td><td colspan="7">${rows.length} deal${rows.length>1?"s":""} shown${stageFilter?" of "+S.deals.length:""}</td></tr>` : "";
+
+  const sel=$("#stageSel");
+  sel.innerHTML=`<option value="">All stages</option>`+U.stages.map(s=>`<option value="${s.id}">${esc(s.label)}</option>`).join("");
+  sel.value=stageFilter||"";
+  sel.className=stageFilter?"on":"";
+  sel.style.background=stageFilter?SC[stageFilter].color:"#FBFCFD";
+
+  document.querySelectorAll("th[data-sort]").forEach(th=>{
+    th.querySelector(".arrow").textContent = th.dataset.sort===sortBy ? (sortDir>0?"▲":"▼") : "";
+  });
+}
+
+function renderEA(){
+  const sets=S.eaOrder.map(k=>({k, ...EA_DEF[k]}));
+  const row=$("#eaCounts");
+  row.style.setProperty("--n",sets.length);
+  row.classList.toggle("many",sets.length>=4);
+  $("#cols").classList.toggle("wide",sets.length>=5);
+  row.innerHTML = sets.map(s=>
+    `<div class="ea-cell"><b style="color:${s.color}">${S.ea[s.k].length}</b><small>${esc(s.short)}</small></div>`).join("");
+
+  const titleEditable = U.eaEdit && !RO();
+  const grips = U.eaDrag && !RO();
+  $("#eaLists").innerHTML = sets.map(s=>`
+    <div class="ea-list" data-ea-list="${s.k}">
+      <h3>${grips?`<span class="grip" draggable="true" data-drag-sec="${s.k}" title="Drag to reorder this section">⠿</span>`:""}<span ${titleEditable?"contenteditable":""} data-eatitle="${s.k}" data-ph="Section name">${esc(S.eaTitles[s.k])}</span>
+        ${RO()?"":`<button data-eaadd="${s.k}" title="Add item" aria-label="Add to ${esc(S.eaTitles[s.k])}">+</button>`}</h3>
+      ${S.ea[s.k].map((v,i)=>`<div class="ea-item" data-ea-slot="${s.k}" data-i="${i}">
+        <span class="dot" style="background:${s.color}" ${RO()?"":`draggable="true" data-drag-ea="${s.k}" data-i="${i}" title="Drag to move"`}></span>
+        <span ${ED()} data-ea="${s.k}" data-i="${i}" data-ph="Name">${esc(v)}</span>
+        ${RO()?"":`<button class="x" data-eadel="${s.k}" data-i="${i}" aria-label="Remove">×</button>`}
+      </div>`).join("") || `<div style="font-size:12px;color:var(--muted)">Nothing yet.</div>`}
+    </div>`).join("");
+}
+
+function setSyncBar(){
+  const b=$("#linkbar"); if(!b||!U) return;
+  let cls="linkbar", msg="", acts="";
+  if(sync.conflict){
+    cls+=" bad";
+    msg=`<b>${esc(sync.theirName||"Someone")}</b> saved a newer version of ${esc(U.label)}${sync.theirAt?" ("+esc(ago(sync.theirAt))+")":""} while you were editing.`;
+    acts=`<button data-act="theirs">Load their version</button><button class="primary" data-act="mine">Keep mine</button>`;
+  }else if(RO()){
+    msg=`View only — you can see ${esc(U.label)} but not change it.`+
+        (sync.at?` Last change by <b>${esc(sync.byName||"a colleague")}</b>, ${esc(ago(sync.at))}.`:"");
+  }else if(sync.error==="auth"){
+    cls+=" bad"; msg="Your sign-in expired before this change saved."; acts=`<button class="primary" data-act="reload">Sign in again</button>`;
+  }else if(sync.error){
+    cls+=" bad"; msg="Couldn't reach SharePoint — retrying. Keep this page open so your change isn't lost.";
+    acts=`<button data-act="retry">Retry now</button>`;
+  }else if(sync.saving){
+    cls+=" warn"; msg="Saving to SharePoint…";
+  }else if(sync.dirty){
+    cls+=" warn"; msg="Saving shortly…";
+  }else if(!sync.exists){
+    cls+=" warn";
+    msg=`No pipeline saved for <b>${esc(U.label)}</b> yet. Add a deal to start one, or load a saved copy.`;
+    if(sync.candidates.length){
+      const c=sync.candidates[0];
+      msg=`No pipeline saved for <b>${esc(U.label)}</b> yet, but <b>${esc(c.name)}</b> is in the ${esc(U.folder)} folder.`;
+      acts=`<button class="primary" data-act="usecand" data-id="${esc(c.id)}">Use this file</button>`;
+    }
+  }else{
+    cls+=" on";
+    msg=`Saved to SharePoint · last change by <b>${esc(sync.byName||"—")}</b>, ${esc(ago(sync.at))}`;
+  }
+  b.className=cls;
+  b.innerHTML=`<span class="dot"></span><span>${msg}</span>${acts?`<span class="acts">${acts}</span>`:""}`;
+}
+
+/* =====================================================================
+   ALL-UNITS VIEW
+   ===================================================================== */
+async function openAll(silent){
+  const seq=++navSeq;
+  U=null; S=null; sync=freshSync(); closeDrawer();
+  document.body.classList.remove("ro");
+  renderHead(); document.title="All units — H1–H2 2026 Pipeline";
+  if(!silent) setLoading("Loading all business units…");
+  const results=await Promise.all(UNITS.map(u=>
+    readUnit(u).then(res=>({u,res})).catch(e=>({u,res:{status:"error",error:e}}))));
+  if(seq!==navSeq||view!=="all") return;
+  hideLoading(); show("#unitView",false); show("#allView",true);
+  renderAll(results);
+}
+
+function unitStats(u,s){
+  const stageCounts=u.stages.map(st=>({st, n:s.deals.filter(d=>d.stage===st.id).length}));
+  return {
+    deals:s.deals.length, mandated:s.mandated,
+    ev:s.deals.reduce((a,d)=>a+num(d.ev),0),
+    closed:s.deals.filter(d=>d.stage==="closure").reduce((a,d)=>a+num(d.ev),0),
+    stageCounts,
+    ea:u.ea.map(k=>({k, short:EA_DEF[k].short, n:s.ea[k].length}))
+  };
+}
+
+function renderAll(results){
+  const T={deals:0,mandated:0,ev:0,closed:0,won:0}; let reporting=0;
+  const cards=results.map(({u,res})=>{
+    const head=(right)=>`<header><span class="ubadge">${esc(u.label)}</span><span class="upd">${right}</span></header>`;
+    if(res.status==="ok"){
+      const s=normalise(res.data,u), st=unitStats(u,s); reporting++;
+      T.deals+=st.deals; T.mandated+=st.mandated; T.ev+=st.ev; T.closed+=st.closed;
+      T.won+=(st.ea.find(e=>e.k==="won")||{n:0}).n;
+      const by=(res.meta.lastModifiedBy&&res.meta.lastModifiedBy.user&&res.meta.lastModifiedBy.user.displayName)||"";
+      const segs=st.stageCounts.filter(x=>x.st.id!=="mandated"&&x.n>0);
+      return `<a class="ucard" href="#${u.id}" aria-label="Open ${esc(u.label)} pipeline">
+        ${head(`Updated${by?" by "+esc(by):""} · ${esc(ago(res.meta.lastModifiedDateTime))}`)}
+        <div class="unums">
+          <div><b>${st.deals}</b><small>Deals</small></div>
+          <div><b>${st.mandated}</b><small>Mandated</small></div>
+          <div><b>${money(st.ev)}</b><small>Tracked EV</small></div>
+          <div><b>${money(st.closed)}</b><small>Closed EV</small></div>
+        </div>
+        <div class="ubar">${segs.map(x=>`<span style="flex:${x.n};background:${x.st.color}" title="${esc(x.st.label)}: ${x.n}"></span>`).join("")}</div>
+        <div class="ulegend">${st.stageCounts.filter(x=>x.st.id!=="mandated").map(x=>
+          `<span><i style="background:${x.st.color}"></i>${esc(x.st.label)} <b>${x.n}</b></span>`).join("")}</div>
+        <div class="uea">${st.ea.map(e=>`${esc(e.short)} <b>${e.n}</b>`).join(" &nbsp;·&nbsp; ")}</div>
+      </a>`;
+    }
+    const why = res.status==="missing" ? `Nothing saved yet. Open ${esc(u.label)} to start its pipeline.`
+      : res.status==="noaccess" ? `You don't have access to the ${esc(u.folder)} folder.`
+      : res.status==="nofolder" ? `The ${esc(u.folder)} folder is missing from SharePoint.`
+      : res.status==="corrupt" ? `The saved file couldn't be read.`
+      : `Couldn't load: ${esc((res.error&&res.error.message)||"unknown error")}`;
+    return `<a class="ucard" href="#${u.id}">${head("")}<div class="uempty">${why}</div></a>`;
+  }).join("");
+
+  $("#allView").innerHTML=`
+    <div class="sum-totals">
+      <div><b>${T.deals}</b><small>Deals tracked</small></div>
+      <div><b>${T.mandated}</b><small>Signed mandates</small></div>
+      <div><b>${money(T.ev)}</b><small>Tracked EV</small></div>
+      <div><b>${money(T.closed)}</b><small>Closed EV</small></div>
+      <div><b>${T.won}</b><small>EAs won</small></div>
+    </div>
+    <div class="sum-grid">${cards}</div>
+    <p class="sum-note">${reporting} of ${UNITS.length} units reporting. Figures add the EV entered on each deal; ranges count their lower figure. Refreshes every minute.</p>`;
+}
+
+/* =====================================================================
+   DRAWER
+   ===================================================================== */
+function openDrawer(id){
+  const d=S.deals.find(x=>x.id===id); if(!d) return;
+  editing=id;
+  $("#drawerTitle").textContent=d.project||"New deal";
+  $("#drawerKicker").textContent=`${U.label} · ${SC[d.stage].label}`;
+  $("#f-stage").innerHTML=U.stages.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${esc(s.label)}</option>`).join("");
+  ["project","buyer","status","start","ev","note"].forEach(f=>$("#f-"+f).value=d[f]||"");
+  $("#drawer").classList.add("open"); $("#scrim").classList.add("on");
+}
+function closeDrawer(){ editing=null; $("#drawer").classList.remove("open"); $("#scrim").classList.remove("on"); }
+
+/* =====================================================================
+   DRAG & DROP
+   ===================================================================== */
+function clearMarks(){ document.querySelectorAll(".drop-in,.drop-before").forEach(el=>el.classList.remove("drop-in","drop-before")); }
+function moveDeal(id,{beforeId,stage}={}){
+  const i=S.deals.findIndex(d=>d.id===id); if(i<0) return;
+  const [d]=S.deals.splice(i,1);
+  if(stage) d.stage=stage;
+  if(beforeId && beforeId!==id){
+    const j=S.deals.findIndex(x=>x.id===beforeId);
+    S.deals.splice(j<0?S.deals.length:j,0,d);
+  }else if(stage){
+    let last=-1; S.deals.forEach((x,k)=>{ if(x.stage===stage) last=k; });
+    S.deals.splice(last+1,0,d);
+  }else S.deals.push(d);
+}
+function moveEA(from,i,to,j){
+  const [v]=S.ea[from].splice(i,1);
+  if(j==null){ S.ea[to].push(v); return; }
+  if(from===to && i<j) j--;
+  S.ea[to].splice(j,0,v);
+}
+function moveSection(k,beforeK){
+  if(k===beforeK) return;
+  const o=S.eaOrder; o.splice(o.indexOf(k),1);
+  const j=o.indexOf(beforeK); o.splice(j<0?o.length:j,0,k);
+}
+function dropTarget(e){
+  if(!drag) return null;
+  if(drag.kind==="sec"){
+    const list=e.target.closest("[data-ea-list]");
+    return list?{el:list,mark:"drop-before",secBefore:list.dataset.eaList}:null;
+  }
+  if(drag.kind==="deal"){
+    const c=e.target.closest(".chip[data-drag-deal]");
+    if(c) return {el:c,mark:"drop-before",beforeId:c.dataset.dragDeal,stage:c.closest("[data-stage]").dataset.stage};
+    const col=e.target.closest("[data-stage]");
+    if(col) return {el:col,mark:"drop-in",stage:col.dataset.stage};
+    const row=e.target.closest("tr[data-row]");
+    if(row && drag.from==="row") return {el:row,mark:"drop-before",beforeId:row.dataset.row};
+  }
+  if(drag.kind==="ea"){
+    const item=e.target.closest("[data-ea-slot]");
+    if(item) return {el:item,mark:"drop-before",list:item.dataset.eaSlot,index:+item.dataset.i};
+    const list=e.target.closest("[data-ea-list]");
+    if(list) return {el:list,mark:"drop-in",list:list.dataset.eaList,index:null};
+  }
+  return null;
+}
+
+/* =====================================================================
+   EVENTS — wired once, act on whichever unit is open
+   ===================================================================== */
+let wired=false;
+function wireOnce(){
+  if(wired) return; wired=true;
+
+  document.addEventListener("blur",e=>{
+    const el=e.target;
+    if(!el||!el.dataset||!(el.isContentEditable||(el.hasAttribute&&el.hasAttribute("contenteditable")))) return;
+    if(!S||RO()) return;
+    const v=el.textContent.trim();
+    if(el.dataset.f){
+      const d=S.deals.find(x=>x.id===el.dataset.id);
+      if(d && d[el.dataset.f]!==v){ d[el.dataset.f]=v; save(); render(); }
+    }else if(el.dataset.col){
+      const k=el.dataset.col; el.removeAttribute("contenteditable");
+      if(!v){ el.textContent=S.cols[k]; return; }
+      if(S.cols[k]!==v){ S.cols[k]=v; save(); renderCols(); }
+    }else if(el.dataset.eatitle){
+      const k=el.dataset.eatitle;
+      if(!v){ el.textContent=S.eaTitles[k]; return; }
+      if(S.eaTitles[k]!==v){ S.eaTitles[k]=v; save(); }
+    }else if(el.dataset.ea){
+      const arr=S.ea[el.dataset.ea], i=+el.dataset.i;
+      if(arr && arr[i]!==v){ arr[i]=v; save(); renderEA(); }
+    }else if(el.dataset.meta){
+      const k=el.dataset.meta;
+      if(!v){ el.textContent=S[k]; return; }
+      if(S[k]!==v){ S[k]=v; save(); }
+    }
+  },true);
+
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Enter" && e.target.isContentEditable){ e.preventDefault(); e.target.blur(); }
+    if(e.key==="Escape") closeDrawer();
+  });
+
+  document.addEventListener("change",e=>{
+    const t=e.target;
+    if(t.id==="stageSel"){ stageFilter=t.value||null; render(); return; }
+    if(t.dataset && t.dataset.f==="stage" && S && !RO()){
+      const d=S.deals.find(x=>x.id===t.dataset.id);
+      if(d){ d.stage=t.value; save(); render(); }
+    }
+  });
+
+  document.addEventListener("dblclick",e=>{
+    const el=e.target.closest("[data-col]");
+    if(!el||!U||!U.colEdit||RO()) return;
+    el.setAttribute("contenteditable","true"); el.focus();
+    const r=document.createRange(); r.selectNodeContents(el);
+    const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  });
+
+  document.addEventListener("click",async e=>{
+    if(e.target.isContentEditable) return;
+    const t=e.target.closest("[data-act],[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort],[data-filter]");
+    if(!t) return;
+    const act=t.dataset.act;
+    if(act==="reload"){ location.reload(); return; }
+    if(act==="signin"){ signIn(); return; }
+    if(act==="retry"){ sync.error=null; pushSave(); return; }
+    if(act==="theirs"){ sync.conflict=false; sync.dirty=false; await openUnit(U); return; }
+    if(act==="mine"){ sync.conflict=false; sync.dirty=true; editVer++; await pushSave({overwrite:true}); return; }
+    if(act==="usecand"){ await useCandidate(t.dataset.id); return; }
+    if(!S) return;
+    if(t.dataset.filter){ stageFilter=stageFilter===t.dataset.filter?null:t.dataset.filter; render(); return; }
+    if(t.dataset.sort){ if(sortBy===t.dataset.sort) sortDir*=-1; else { sortBy=t.dataset.sort; sortDir=1; } renderTable(); return; }
+    if(RO()) return;
+    if(t.dataset.open) openDrawer(t.dataset.open);
+    else if(t.dataset.del){
+      const d=S.deals.find(x=>x.id===t.dataset.del);
+      if(d && confirm(`Delete “${d.project||"this deal"}” from ${U.label}?`)){
+        S.deals=S.deals.filter(x=>x.id!==t.dataset.del); save(); render();
+      }
+    }else if(t.dataset.eaadd){
+      S.ea[t.dataset.eaadd].push(""); save(); renderEA();
+      const l=document.querySelectorAll(`[data-ea="${t.dataset.eaadd}"]`); if(l.length) l[l.length-1].focus();
+    }else if(t.dataset.eadel){
+      S.ea[t.dataset.eadel].splice(+t.dataset.i,1); save(); renderEA();
+    }
+  });
+
+  /* drag & drop */
+  document.addEventListener("dragstart",e=>{
+    if(!S||RO()) return;
+    const sec=e.target.closest("[data-drag-sec]");
+    const c=e.target.closest("[data-drag-deal]");
+    const row=e.target.closest("[data-drag-row]");
+    const ea=e.target.closest("[data-drag-ea]");
+    if(sec && U.eaDrag) drag={kind:"sec",k:sec.dataset.dragSec};
+    else if(c)   drag={kind:"deal",id:c.dataset.dragDeal,from:"chip"};
+    else if(row) drag={kind:"deal",id:row.dataset.dragRow,from:"row"};
+    else if(ea)  drag={kind:"ea",list:ea.dataset.dragEa,index:+ea.dataset.i};
+    else return;
+    e.dataTransfer.effectAllowed="move";
+    e.dataTransfer.setData("text/plain",drag.id||drag.k||"ea");
+    (sec?sec.closest(".ea-list"):row?row.closest("tr"):ea?ea.closest(".ea-item"):c).classList.add("dragging");
+  });
+  document.addEventListener("dragover",e=>{
+    const t=dropTarget(e); if(!t) return;
+    e.preventDefault(); e.dataTransfer.dropEffect="move";
+    if(!t.el.classList.contains(t.mark)){ clearMarks(); t.el.classList.add(t.mark); }
+  });
+  document.addEventListener("drop",e=>{
+    const t=dropTarget(e); if(!t) return;
+    e.preventDefault();
+    if(drag.kind==="deal") moveDeal(drag.id,{beforeId:t.beforeId,stage:t.stage});
+    else if(drag.kind==="sec") moveSection(drag.k,t.secBefore);
+    else moveEA(drag.list,drag.index,t.list,t.index);
+    drag=null; clearMarks(); save(); render();
+  });
+  document.addEventListener("dragend",()=>{
+    drag=null; clearMarks();
+    document.querySelectorAll(".dragging").forEach(el=>el.classList.remove("dragging"));
+  });
+
+  /* drawer */
+  $("#scrim").addEventListener("click",closeDrawer);
+  $("#f-save").addEventListener("click",()=>{
+    const d=S&&S.deals.find(x=>x.id===editing); if(!d) return;
+    ["project","buyer","status","start","ev","note"].forEach(f=>d[f]=$("#f-"+f).value.trim());
+    d.stage=$("#f-stage").value;
+    closeDrawer(); save(); render();
+  });
+  $("#f-del").addEventListener("click",()=>{
+    const d=S&&S.deals.find(x=>x.id===editing); if(!d) return;
+    if(confirm(`Delete “${d.project||"this deal"}” from ${U.label}?`)){
+      S.deals=S.deals.filter(x=>x.id!==editing); closeDrawer(); save(); render();
+    }
+  });
+
+  /* toolbar */
+  $("#addDeal").addEventListener("click",()=>{
+    if(!S||RO()) return;
+    const stage=stageFilter||(SC.live?"live":U.stages[0].id);
+    const d={id:"d"+Date.now().toString(36),project:"",buyer:"",stage,status:"",start:"",ev:"",note:""};
+    S.deals.push(d); render(); openDrawer(d.id); $("#f-project").focus();
+  });
+  $("#exportBtn").addEventListener("click",()=>{
+    if(!S) return;
+    downloadBlob(new Blob([JSON.stringify(S,null,2)],{type:"application/json"}),
+      `pipeline-${U.id}-${new Date().toISOString().slice(0,10)}.json`);
+  });
+  $("#csvBtn").addEventListener("click",()=>{
+    if(!S) return;
+    const q=v=>`"${String(v??"").replace(/"/g,'""')}"`, c=S.cols;
+    const rows=[[c.idx,c.project,c.buyer,c.stage,c.status,c.start,c.ev,"Notes"]];
+    S.deals.forEach((d,i)=>rows.push([i+1,d.project,d.buyer,SC[d.stage].label,d.status,d.start,d.ev,d.note]));
+    rows.push([]); rows.push(["Signed mandates without a named counterparty",S.mandated]);
+    S.eaOrder.forEach(k=>rows.push([S.eaTitles[k],S.ea[k].join("; ")]));
+    downloadBlob(new Blob(["\uFEFF"+rows.map(r=>r.map(q).join(",")).join("\r\n")],{type:"text/csv"}),
+      `pipeline-${U.id}-${new Date().toISOString().slice(0,10)}.csv`);
+  });
+  $("#importBtn").addEventListener("click",()=>{
+    if(!S||RO()) return;
+    const i=document.createElement("input"); i.type="file"; i.accept="application/json,.json";
+    i.onchange=()=>{
+      const f=i.files[0]; if(!f) return;
+      const r=new FileReader();
+      r.onload=()=>{
+        let p; try{ p=JSON.parse(r.result); }catch(e){ p=null; }
+        if(!p||!Array.isArray(p.deals)){ alert("That file isn't a pipeline. Choose a JSON file made with Save a copy."); return; }
+        if(!confirm(`Replace ${U.label}'s pipeline in SharePoint with ${f.name}? Everyone will see the change.`)) return;
+        S=normalise(p,U); stageFilter=null; sortBy=null; save(); render();
+        toast(`Loaded ${f.name} into ${U.label}.`);
+      };
+      r.readAsText(f);
+    };
+    i.click();
+  });
+  $("#printBtn").addEventListener("click",()=>window.print());
+  $("#signOut").addEventListener("click",async()=>{
+    await flushSave();
+    msalApp.logoutRedirect({account, postLogoutRedirectUri:redirectUri()});
+  });
+}
+
+async function useCandidate(itemId){
+  if(!U||RO()) return;
+  if(S.deals.length && !confirm(`Replace what's on screen with this file?`)) return;
+  try{
+    const r=await graph(`/drives/${driveId}/items/${itemId}`);
+    if(!r.ok) throw await graphError(r,"file");
+    const meta=await r.json();
+    const p=JSON.parse(await download(meta));
+    if(!p||!Array.isArray(p.deals)) throw new Error("not a pipeline file");
+    S=normalise(p,U); save(); render();
+    toast(`Loaded ${meta.name}. Saving it as ${U.folder}/${CFG.fileName}.`);
+  }catch(e){
+    toast(`Couldn't use that file: ${e.message||e}`);
+  }
+}
+
+function downloadBlob(blob,name){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+boot();
+
+</script>
+</body>
+</html>
