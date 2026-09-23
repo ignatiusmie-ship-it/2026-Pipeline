@@ -1096,10 +1096,13 @@ async function openAll(silent){
   renderAll(results);
 }
 
+/* "Active in market" = deals genuinely in execution */
+const ACTIVE_STAGES=["dd","live","book"];
 function unitStats(u,s){
   const stageCounts=u.stages.map(st=>({st, n:s.deals.filter(d=>d.stage===st.id).length}));
   return {
     deals:s.deals.length, closures:s.deals.filter(d=>d.stage==="closure").length, mandated:s.mandated,
+    active:s.deals.filter(d=>ACTIVE_STAGES.includes(d.stage)).length,
     ev:s.deals.reduce((a,d)=>a+num(d.ev),0),
     closed:s.deals.filter(d=>d.stage==="closure").reduce((a,d)=>a+num(d.ev),0),
     stageCounts,
@@ -1108,13 +1111,13 @@ function unitStats(u,s){
 }
 
 function renderAll(results){
-  const T={deals:0,mandated:0,ev:0,closed:0,won:0}; let reporting=0;
+  const T={deals:0,active:0,mandated:0,ev:0,closed:0,won:0}; let reporting=0;
   const cards=results.map(({u,res})=>{
     const head=(right)=>`<header><span class="ubadge">${esc(u.label)}</span><span class="upd">${right}</span></header>`;
     if(res.status==="ok"){
       const s=normalise(res.data,u), st=unitStats(u,s); reporting++;
       const cur=u.currency||"$";
-      T.deals+=st.deals; T.mandated+=st.mandated; T.ev+=st.ev; T.closed+=st.closed;
+      T.deals+=st.deals; T.active+=st.active; T.mandated+=st.mandated; T.ev+=st.ev; T.closed+=st.closed;
       T.won+=(st.ea.find(e=>e.k==="won")||{n:0}).n;
       const by=(res.meta.lastModifiedBy&&res.meta.lastModifiedBy.user&&res.meta.lastModifiedBy.user.displayName)||"";
       const segs=st.stageCounts.filter(x=>x.st.id!=="mandated"&&x.n>0);
@@ -1142,8 +1145,8 @@ function renderAll(results){
 
   $("#allView").innerHTML=`
     <div class="sum-totals">
-      <div><b>${T.deals}</b><small>Deals tracked</small></div>
       <div><b>${T.mandated}</b><small>Signed mandates</small></div>
+      <div title="Deals at DD, Live or Book building"><b>${T.active}</b><small>Active in market</small></div>
       <div><b>${money(T.ev)}</b><small>Tracked EV</small></div>
       <div><b>${money(T.closed)}</b><small>Closed EV</small></div>
       <div><b>${T.won}</b><small>EA<span class="lc">s</span> won</small></div>
