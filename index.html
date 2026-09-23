@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>H1–H2 2026 Pipeline</title>
+<title>S&amp;L Pipeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
@@ -352,6 +352,7 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .uea{border-top:1px solid var(--rule-soft);padding:10px 16px;font-size:12px;color:var(--ink-2)}
 .uea b{color:var(--ink);font-variant-numeric:tabular-nums}
 .uempty{padding:24px 16px;color:var(--muted);font-size:13px}
+.lc{text-transform:none}
 .sum-note{font-size:11.5px;color:var(--muted);margin-top:16px}
 
 .toast{
@@ -376,12 +377,12 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 <div class="masthead">
   <div class="wrap mast-grid">
     <div>
-      <div class="unit" id="unitBadge">Pipeline</div>
-      <h1 class="title"><span id="titleMain" data-meta="title" data-ph="Title">H1–H2 2026</span> <span class="accent" id="titleAccent" data-meta="accent" data-ph="…">Pipeline</span></h1>
+      <div class="unit" id="unitBadge">All Business Units</div>
+      <h1 class="title"><span id="titleMain">S&amp;L</span> <span class="accent" id="titleAccent">Pipeline</span></h1>
     </div>
     <nav class="topnav" id="topnav" aria-label="Business units" hidden>
       <div class="navunits" id="nav">
-        <a href="#all" data-view="all">All units</a>
+        <a href="#all" data-view="all">All Business Units</a>
         <a href="#us" data-view="us">US</a>
         <a href="#uk" data-view="uk">UK</a>
         <a href="#saas" data-view="saas">SaaS</a>
@@ -485,6 +486,7 @@ const CFG = {
   pollSeconds: 60
 };
 const GRAPH = "https://graph.microsoft.com/v1.0";
+const BRAND = {name:"S&L", accent:"Pipeline"};
 
 /* =====================================================================
    BUSINESS UNITS — the only place their differences are defined
@@ -510,13 +512,13 @@ const COL_DEFAULTS = {idx:"#", project:"Project", buyer:"Buyer", stage:"Stage",
                       status:"Status / closure", start:"Start date", ev:"EV"};
 
 const UNITS = [
-  {id:"us",    label:"US",    folder:"US",    file:"pipeline-us-2026.json",    stages:BASE_STAGES,
+  {id:"us",    label:"US",    folder:"US",    file:"pipeline-us-2026.json",    currency:"$", stages:BASE_STAGES,
    ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
-  {id:"uk",    label:"UK",    folder:"UK",    file:"pipeline-uk-2026.json",    stages:BASE_STAGES,
+  {id:"uk",    label:"UK",    folder:"UK",    file:"pipeline-uk-2026.json",    currency:"€", stages:BASE_STAGES,
    ea:["won","sent","lost"], eaEdit:true,  eaDrag:true,  colEdit:false},
-  {id:"saas",  label:"SaaS",  folder:"SaaS",  file:"pipeline-saas-2026.json",  stages:[...BASE_STAGES, TERMINATED],
+  {id:"saas",  label:"SaaS",  folder:"SaaS",  file:"pipeline-saas-2026.json",  currency:"$", stages:[...BASE_STAGES, TERMINATED],
    ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
-  {id:"india", label:"India", folder:"India", file:"pipeline-india-2026.json", stages:BASE_STAGES,
+  {id:"india", label:"India", folder:"India", file:"pipeline-india-2026.json", currency:"$", stages:BASE_STAGES,
    ea:["won","sent","nda","yet","lost"], eaEdit:true, eaDrag:true, colEdit:true,
    cols:{buyer:"Transaction Type"}}
 ];
@@ -544,7 +546,7 @@ function freshSync(){
 const $ = s=>document.querySelector(s);
 const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num = ev=>{ const m=String(ev||"").replace(/,/g,"").match(/([\d.]+)/); return m?parseFloat(m[1]):0; };
-const money = n=>"$"+(Math.round(n*10)/10).toString().replace(/\.0$/,"")+"M";
+const money = (n,cur="$")=>cur+(Math.round(n*10)/10).toString().replace(/\.0$/,"")+"M";
 const RO = ()=>!sync.canEdit;
 const ED = ()=>RO() ? "" : "contenteditable";
 const enc = p=>p.split("/").map(encodeURIComponent).join("/");
@@ -615,7 +617,7 @@ async function boot(){
 
 function showSignIn(){
   hideLoading();
-  gateCard($("#gate"),"Pipeline 2026",
+  gateCard($("#gate"),"S&L Pipeline",
     "Sign in with your Sett Lucas Microsoft account to see the business unit pipelines.",
     "Sign in with Microsoft","signin");
 }
@@ -858,6 +860,7 @@ function normalise(d,u){
     if(!x.id) x.id="d"+Date.now().toString(36)+i;
     if(!valid.has(x.stage)) x.stage="passive";
     ["project","buyer","status","start","ev","note"].forEach(f=>{ x[f]=x[f]==null?"":String(x[f]); });
+    if(u.currency && u.currency!=="$") x.ev=x.ev.replace(/^\s*(?:US\s*)?\$\s*/i,u.currency);
   });
   s.ea=Object.assign({}, s.ea||{});
   u.ea.forEach(k=>{ if(!Array.isArray(s.ea[k])) s.ea[k]=[]; s.ea[k]=s.ea[k].map(v=>String(v??"")); });
@@ -916,19 +919,15 @@ function render(){
 
 function renderHead(){
   const badge=$("#unitBadge"), t=$("#titleMain"), a=$("#titleAccent"), reg=$("#registerTitle");
+  t.textContent=BRAND.name; a.textContent=BRAND.accent;          /* firm-wide, same on every page */
   if(view==="all"||!S){
-    badge.textContent = view==="all" ? "All units" : (U?U.label:"Pipeline");
-    if(document.activeElement!==t) t.textContent=S?S.title:"H1–H2 2026";
-    if(document.activeElement!==a) a.textContent=S?S.accent:"Pipeline";
-    [t,a].forEach(el=>el.removeAttribute("contenteditable"));
+    badge.textContent = view==="all" ? "All Business Units" : (U?U.label:BRAND.accent);
     return;
   }
   badge.textContent=U.label;
-  [[t,"title"],[a,"accent"],[reg,"registerTitle"]].forEach(([el,k])=>{
-    if(document.activeElement!==el && el.textContent!==S[k]) el.textContent=S[k];
-    if(RO()) el.removeAttribute("contenteditable"); else el.setAttribute("contenteditable","true");
-  });
-  document.title=`${U.label} — ${S.title} ${S.accent}`;
+  if(document.activeElement!==reg && reg.textContent!==S.registerTitle) reg.textContent=S.registerTitle;
+  if(RO()) reg.removeAttribute("contenteditable"); else reg.setAttribute("contenteditable","true");
+  document.title=`${U.label} — ${BRAND.name} ${BRAND.accent}`;
 }
 
 function renderCols(){
@@ -1088,7 +1087,7 @@ async function openAll(silent){
   const seq=++navSeq;
   U=null; S=null; sync=freshSync(); closeDrawer();
   document.body.classList.remove("ro");
-  renderHead(); document.title="All units — H1–H2 2026 Pipeline";
+  renderHead(); document.title=`All Business Units — ${BRAND.name} ${BRAND.accent}`;
   if(!silent) setLoading("Loading all business units…");
   const results=await Promise.all(UNITS.map(u=>
     readUnit(u).then(res=>({u,res})).catch(e=>({u,res:{status:"error",error:e}}))));
@@ -1114,6 +1113,7 @@ function renderAll(results){
     const head=(right)=>`<header><span class="ubadge">${esc(u.label)}</span><span class="upd">${right}</span></header>`;
     if(res.status==="ok"){
       const s=normalise(res.data,u), st=unitStats(u,s); reporting++;
+      const cur=u.currency||"$";
       T.deals+=st.deals; T.mandated+=st.mandated; T.ev+=st.ev; T.closed+=st.closed;
       T.won+=(st.ea.find(e=>e.k==="won")||{n:0}).n;
       const by=(res.meta.lastModifiedBy&&res.meta.lastModifiedBy.user&&res.meta.lastModifiedBy.user.displayName)||"";
@@ -1123,8 +1123,8 @@ function renderAll(results){
         <div class="unums">
           <div><b>${st.deals}</b><small>Deals</small></div>
           <div><b>${st.mandated}</b><small>Mandated</small></div>
-          <div><b>${money(st.ev)}</b><small>Tracked EV</small></div>
-          <div><b>${money(st.closed)}</b><small>Closed EV</small></div>
+          <div><b>${money(st.ev,cur)}</b><small>Tracked EV</small></div>
+          <div><b>${money(st.closed,cur)}</b><small>Closed EV</small></div>
         </div>
         <div class="ubar">${segs.map(x=>`<span style="flex:${x.n};background:${x.st.color}" title="${esc(x.st.label)}: ${x.n}"></span>`).join("")}</div>
         <div class="ulegend">${st.stageCounts.filter(x=>x.st.id!=="mandated").map(x=>
@@ -1146,10 +1146,10 @@ function renderAll(results){
       <div><b>${T.mandated}</b><small>Signed mandates</small></div>
       <div><b>${money(T.ev)}</b><small>Tracked EV</small></div>
       <div><b>${money(T.closed)}</b><small>Closed EV</small></div>
-      <div><b>${T.won}</b><small>EAs won</small></div>
+      <div><b>${T.won}</b><small>EA<span class="lc">s</span> won</small></div>
     </div>
     <div class="sum-grid">${cards}</div>
-    <p class="sum-note">${reporting} of ${UNITS.length} units reporting. Figures add the EV entered on each deal; ranges count their lower figure. Refreshes every minute.</p>`;
+    <p class="sum-note">${reporting} of ${UNITS.length} business units reporting. EV totals add the figure entered on each deal, with ranges counting their lower end. Refreshes every minute.</p>`;
 }
 
 /* =====================================================================
@@ -1162,6 +1162,7 @@ function openDrawer(id){
   $("#drawerKicker").textContent=`${U.label} · ${SC[d.stage].label}`;
   $("#f-stage").innerHTML=U.stages.map(s=>`<option value="${s.id}" ${s.id===d.stage?"selected":""}>${esc(s.label)}</option>`).join("");
   ["project","buyer","status","start","ev","note"].forEach(f=>$("#f-"+f).value=d[f]||"");
+  $("#f-ev").placeholder=U.currency+"25M";
   $("#drawer").classList.add("open"); $("#scrim").classList.add("on");
 }
 function closeDrawer(){ editing=null; $("#drawer").classList.remove("open"); $("#scrim").classList.remove("on"); }
