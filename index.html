@@ -1112,12 +1112,14 @@ async function openAll(silent){
 
 /* "Active in market" = deals at the Live stage */
 const ACTIVE_STAGES=["live"];
+/* Tracked EV leaves out parked and dead deals */
+const EV_EXCLUDED=["passive","terminated"];
 function unitStats(u,s){
   const stageCounts=u.stages.map(st=>({st, n:s.deals.filter(d=>d.stage===st.id).length}));
   return {
     deals:s.deals.length, closures:s.deals.filter(d=>d.stage==="closure").length, mandated:s.mandated,
     active:s.deals.filter(d=>ACTIVE_STAGES.includes(d.stage)).length,
-    ev:s.deals.reduce((a,d)=>a+num(d.ev),0),
+    ev:s.deals.filter(d=>!EV_EXCLUDED.includes(d.stage)).reduce((a,d)=>a+num(d.ev),0),
     closed:s.deals.filter(d=>d.stage==="closure").reduce((a,d)=>a+num(d.ev),0),
     stageCounts,
     ea:u.ea.map(k=>({k, short:EA_DEF[k].short, n:s.ea[k].length}))
@@ -1163,11 +1165,11 @@ function renderAll(results){
       <div title="Deals at the Closure stage"><b>${T.closures}</b><small>Deal Closures</small></div>
       <div title="EV of deals at the Closure stage"><b>${money(T.closed)}</b><small>Closed EV</small></div>
       <div title="Deals at the Live stage"><b>${T.active}</b><small>Active in market</small></div>
-      <div title="EV of every deal, all stages"><b>${money(T.ev)}</b><small>Tracked EV</small></div>
+      <div title="EV of all deals except Passive and Terminated — includes Closed EV"><b>${money(T.ev)}</b><small>Tracked EV</small></div>
       <div><b>${T.won}</b><small>EA<span class="lc">s</span> won</small></div>
     </div>
     <div class="sum-grid">${cards}</div>
-    <p class="sum-note">${reporting} of ${UNITS.length} business units reporting. EV totals add the figure entered on each deal, with ranges counting their lower end. Refreshes every minute.</p>`;
+    <p class="sum-note">${reporting} of ${UNITS.length} business units reporting. Tracked EV adds the EV entered on each deal except Passive and Terminated ones, and includes Closed EV. Ranges count their lower end. Refreshes every minute.</p>`;
 }
 
 /* =====================================================================
