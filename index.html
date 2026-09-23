@@ -1099,7 +1099,7 @@ async function openAll(silent){
 function unitStats(u,s){
   const stageCounts=u.stages.map(st=>({st, n:s.deals.filter(d=>d.stage===st.id).length}));
   return {
-    deals:s.deals.length, mandated:s.mandated,
+    deals:s.deals.length, closures:s.deals.filter(d=>d.stage==="closure").length, mandated:s.mandated,
     ev:s.deals.reduce((a,d)=>a+num(d.ev),0),
     closed:s.deals.filter(d=>d.stage==="closure").reduce((a,d)=>a+num(d.ev),0),
     stageCounts,
@@ -1121,7 +1121,7 @@ function renderAll(results){
       return `<a class="ucard" href="#${u.id}" aria-label="Open ${esc(u.label)} pipeline">
         ${head(`Updated${by?" by "+esc(by):""} · ${esc(ago(res.meta.lastModifiedDateTime))}`)}
         <div class="unums">
-          <div><b>${st.deals}</b><small>Deals</small></div>
+          <div><b>${st.closures}</b><small>Deal Closures</small></div>
           <div><b>${st.mandated}</b><small>Mandated</small></div>
           <div><b>${money(st.ev,cur)}</b><small>Tracked EV</small></div>
           <div><b>${money(st.closed,cur)}</b><small>Closed EV</small></div>
