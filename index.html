@@ -311,12 +311,14 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 }
 .navunits a:hover{color:#fff;border-color:rgba(255,255,255,.5)}
 .navunits a.on{background:var(--signal);border-color:var(--signal);color:#fff}
+/* an action, not a place — so it's filled white rather than outlined like the menu */
 .navunits .navpdf{
-  display:inline-flex;align-items:center;gap:6px;background:none;color:#C9D3E1;
-  font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-  padding:7px 13px;border:1px solid rgba(255,255,255,.18);border-radius:2px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;background:#FFFFFF;color:var(--ink);
+  font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
+  padding:7px 14px;border:1px solid #FFFFFF;border-radius:2px;cursor:pointer;margin-left:10px;
 }
-.navunits .navpdf:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+.navunits .navpdf:hover{background:#E4E9F0;border-color:#E4E9F0;color:var(--ink)}
+.navunits .navpdf[hidden]{display:none}
 .navunits .navpdf:disabled{opacity:.6;cursor:progress}
 .navunits .navpdf:focus-visible{outline:2px solid #fff;outline-offset:1px}
 .navunits a:focus-visible{outline:2px solid #fff;outline-offset:1px}
@@ -713,6 +715,7 @@ window.addEventListener("hashchange",()=>{
 async function go(id){
   await flushSave();
   view=id;
+  $("#pdfBtn").hidden = id!=="all";              /* PDF is for the main page only */
   document.querySelectorAll("#nav a").forEach(a=>{
     const on=a.dataset.view===id; a.classList.toggle("on",on);
     if(on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
