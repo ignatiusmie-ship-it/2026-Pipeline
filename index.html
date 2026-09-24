@@ -417,9 +417,7 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
       <div class="toolbar">
         <button class="primary edit-only" id="addDeal">Add deal</button>
         <button id="exportBtn">Save a copy</button>
-        <button id="csvBtn">Open in Excel</button>
         <button class="edit-only" id="importBtn">Load a copy</button>
-        <button id="printBtn">Print</button>
       </div>
       <div class="linkbar" id="linkbar"><span class="dot"></span><span>Loading…</span></div>
 
@@ -1394,16 +1392,6 @@ function wireOnce(){
     downloadBlob(new Blob([JSON.stringify(S,null,2)],{type:"application/json"}),
       `pipeline-${U.id}-${new Date().toISOString().slice(0,10)}.json`);
   });
-  $("#csvBtn").addEventListener("click",()=>{
-    if(!S) return;
-    const q=v=>`"${String(v??"").replace(/"/g,'""')}"`, c=S.cols;
-    const rows=[[c.idx,c.project,c.buyer,c.stage,c.status,c.start,c.ev,"Notes"]];
-    S.deals.forEach((d,i)=>rows.push([i+1,d.project,d.buyer,SC[d.stage].label,d.status,d.start,d.ev,d.note]));
-    rows.push([]); rows.push(["Signed mandates without a named counterparty",S.mandated]);
-    S.eaOrder.forEach(k=>rows.push([S.eaTitles[k],S.ea[k].join("; ")]));
-    downloadBlob(new Blob(["\uFEFF"+rows.map(r=>r.map(q).join(",")).join("\r\n")],{type:"text/csv"}),
-      `pipeline-${U.id}-${new Date().toISOString().slice(0,10)}.csv`);
-  });
   $("#importBtn").addEventListener("click",()=>{
     if(!S||RO()) return;
     const i=document.createElement("input"); i.type="file"; i.accept="application/json,.json";
@@ -1421,7 +1409,6 @@ function wireOnce(){
     };
     i.click();
   });
-  $("#printBtn").addEventListener("click",()=>window.print());
   $("#pdfBtn").addEventListener("click",downloadPDF);
   $("#signOut").addEventListener("click",async()=>{
     await flushSave();
