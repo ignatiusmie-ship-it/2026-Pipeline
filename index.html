@@ -1009,7 +1009,10 @@ function normaliseNotable(d){
     const o={id:x.id?String(x.id):pre+Date.now().toString(36)+i};
     fields.forEach(f=>o[f]=x[f]==null?"":String(x[f])); return o; });
   const out=Object.assign({}, src, {buyers:fix(src.buyers,NB_FIELDS,"b"), clients:fix(src.clients,NC_FIELDS,"c")});
-  out.buyers.forEach(b=>{ if(!["closure","loi","ioi"].includes(b.category)) b.category="closure"; });
+  out.buyers.forEach(b=>{
+    if(!["closure","loi","ioi"].includes(b.category)) b.category="closure";
+    if(!b.target && b.project.includes("/")) Object.assign(b, splitProject(b.project));
+  });
   return out;
 }
 function normalise(d,u){
@@ -1427,11 +1430,17 @@ function liveBuyerRows(units){
   rows.forEach((r,i)=>{ r.lid=i; Object.assign(r, liveRecord(r)); });
   return rows;
 }
+/* unit deals are written "Project / Target" — e.g. "Topaz / TalentBurst" */
+function splitProject(text){
+  const [project,...rest]=String(text||"").split("/").map(x=>x.trim());
+  return {project:project||"", target:rest.filter(Boolean).join(" / ")};
+}
 /* what a pipeline row becomes when it's first edited on this page */
 const TYPE_CODE=/^(pe|pe port|sb|strategic|holding co\.?)$/i;
 function liveRecord(r){
   const isType=TYPE_CODE.test(r.tag||"");
-  return {buyer:r.buyer, domain:"", type:isType?r.tag:"", category:r.category, project:r.project, target:"",
+  const pt=splitProject(r.project);
+  return {buyer:r.buyer, domain:"", type:isType?r.tag:"", category:r.category, project:pt.project, target:pt.target,
           yearClosed:r.category==="closure"?"2026":"", yearLaunched:"", buyerLead:"", mandateLead:"", office:"", handledBy:"",
           notes:[`${r.u.label} pipeline`, !isType&&r.tag?`with ${r.tag}`:"", r.status, r.ev].filter(Boolean).join(" · ")};
 }
