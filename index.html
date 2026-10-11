@@ -407,7 +407,14 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .ntabs button.on span{color:#A9B6C9}
 #nlinkbar{margin-bottom:16px}
 .ntable{min-width:1100px}
-.nbuyers{min-width:1400px}
+/* placeholders only while typing — an empty cell stays empty */
+.ntable [contenteditable]:empty:not(:focus):before{content:""}
+.nbuyers{table-layout:fixed;width:1366px;min-width:1366px}
+.nbuyers td{overflow-wrap:break-word}
+.nsec{display:inline-block;font-family:inherit;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--c);background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--c);border-radius:2px;padding:3px 6px;white-space:nowrap}
+select.nsec{cursor:pointer;appearance:auto;-webkit-appearance:auto;padding:2px 2px 2px 5px}
+.ntable select.nsec{color:var(--c);background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--c);text-transform:uppercase}
 .ntable td{font-size:13px}
 .ntable td.nstrong,.ntable .nbname{font-weight:700;color:var(--ink)}
 .ntable .nbname{font-size:14px}
@@ -422,6 +429,12 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .ntable tr.nrepeat .nbname{color:var(--muted);font-weight:400}
 .ntable tr.nlive td{background:#FAFBFC}
 .ntable a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.ntable a.livepill{color:var(--s-book);text-decoration:none}
+.ntable a.livepill:hover{background:var(--s-book);color:#fff}
+/* an empty domain line takes no space; hovering the row reveals it to click into */
+.ntable .nbdom:empty{display:none}
+.ntable tr:hover .nbdom[contenteditable]:empty,.ntable tr:focus-within .nbdom[contenteditable]:empty,.ntable .nbdom[contenteditable]:focus{display:block}
+.ntable tr:hover .nbdom[contenteditable]:empty:not(:focus):before{content:attr(data-ph);color:#B6C0CD}
 .livepill{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
   color:var(--s-book);border:1px solid currentColor;padding:1px 6px;border-radius:2px}
 .ncount{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--ink-2);padding:1px 6px;border-radius:2px;white-space:nowrap}
@@ -1409,9 +1422,25 @@ function notableMessage(title,html){
 function liveBuyerRows(units){
   const {buyers}=collectBuyers(units), rows=[];
   for(const b of buyers) for(const k of ["closure","loi","ioi"]) for(const e of b.entries[k])
-    rows.push({live:true, buyer:b.name, type:[...b.tags].join(", "), category:k, project:e.project, u:e.u,
-               yearClosed:k==="closure"?"2026":"", notes:e.status||e.stage.label, ev:e.ev});
+    rows.push({live:true, buyer:b.name, tag:[...b.tags].join(", "), category:k, project:e.project, u:e.u,
+               status:e.status||e.stage.label, ev:e.ev});
+  rows.forEach((r,i)=>{ r.lid=i; Object.assign(r, liveRecord(r)); });
   return rows;
+}
+/* what a pipeline row becomes when it's first edited on this page */
+const TYPE_CODE=/^(pe|pe port|sb|strategic|holding co\.?)$/i;
+function liveRecord(r){
+  const isType=TYPE_CODE.test(r.tag||"");
+  return {buyer:r.buyer, domain:"", type:isType?r.tag:"", category:r.category, project:r.project, target:"",
+          yearClosed:r.category==="closure"?"2026":"", yearLaunched:"", buyerLead:"", mandateLead:"", office:"", handledBy:"",
+          notes:[`${r.u.label} pipeline`, !isType&&r.tag?`with ${r.tag}`:"", r.status, r.ev].filter(Boolean).join(" · ")};
+}
+function adoptLive(lid){
+  const r=notableLive.find(x=>x.lid===lid); if(!r) return null;
+  const rec=Object.fromEntries(NB_FIELDS.map(f=>[f,r[f]??""]));
+  rec.id="b"+Date.now().toString(36)+lid; rec.category=r.category;
+  S.buyers.push(rec);
+  return rec;
 }
 const CAT_LABEL={closure:"Deal Closure", loi:"LOI", ioi:"IOI"};
 const CAT_COLOR={closure:"var(--s-closure)", loi:"var(--s-live)", ioi:"var(--s-book)"};
@@ -1419,8 +1448,9 @@ const cell=(table,id,f,val,ph,cls="")=>`<td class="${cls}" ${ED()} data-ntable="
 
 function renderNotable(){
   const saved=S.buyers.map(b=>Object.assign({live:false},b));
-  const savedKeys=new Set(saved.map(b=>nKey(b)+"|"+(b.project||"").toLowerCase().trim()));
-  const live=notableLive.filter(r=>!savedKeys.has(nKey(r)+"|"+r.project.toLowerCase().trim()));
+  const rk=b=>nKey(b)+"|"+(b.project||"").toLowerCase().trim()+"|"+b.category;
+  const savedKeys=new Set(saved.map(rk));
+  const live=notableLive.filter(r=>!savedKeys.has(rk(r)));
   const all=[...saved,...live];
   const tab=(k,label,n)=>`<button role="tab" data-ntab="${k}" aria-selected="${notableTab===k}" class="${notableTab===k?"on":""}">${label}<span>${n}</span></button>`;
   const uniqueBuyers=new Set(all.filter(b=>b.buyer).map(nKey)).size;
@@ -1471,42 +1501,42 @@ function buyersTables(all){
         counts[cat]>1?`<span class="ncount">${counts[cat]} projects</span>`:"",
         ...["closure","loi","ioi"].filter(o=>o!==cat&&counts[o]).map(o=>`<span class="also" style="--c:${CAT_COLOR[o]}">also ${CAT_LABEL[o]} ×${counts[o]}</span>`)
       ].join("") : "";
-      if(b.live) return `<tr class="nlive${first?"":" nrepeat"}">
-          <td class="nb"><div class="nbname">${esc(b.buyer)}</div><span class="livepill">2026 pipeline · ${esc(b.u.label)}</span>${badges?`<div class="alsos">${badges}</div>`:""}</td>
-          <td>${esc(b.type)}</td><td><span class="pill" style="background:${CAT_COLOR[cat]}">${CAT_LABEL[cat]}</span></td>
-          <td class="nstrong"><a href="#${b.u.id}">${esc(b.project)}</a></td><td></td>
-          <td class="nyear">${esc(b.yearClosed)}</td><td class="nyear"></td><td></td><td></td>
-          <td>${esc(b.u.label)}</td><td></td><td class="nnote">${esc(b.notes)}${b.ev?" · "+esc(b.ev):""}</td><td></td></tr>`;
-      return `<tr data-nrow="${b.id}" class="${first?"":"nrepeat"}">
-          <td class="nb"><div class="nbname" ${ED()} data-ntable="buyers" data-nid="${b.id}" data-nf="buyer" data-ph="Buyer">${esc(b.buyer)}</div>
-            <div class="nbdom" ${ED()} data-ntable="buyers" data-nid="${b.id}" data-nf="domain" data-ph="${RO()?"":"domain.com"}">${esc(b.domain)}</div>
+      const id=b.live ? "live:"+b.lid : b.id;
+      const c=(f,ph,cls="")=>`<td class="${cls}" ${ED()} data-ntable="buyers" data-nid="${id}" data-nf="${f}" data-ph="${esc(ph)}">${esc(b[f])}</td>`;
+      return `<tr ${b.live?"":`data-nrow="${b.id}"`} class="${b.live?"nlive":""}${first?"":" nrepeat"}">
+          <td class="nb"><div class="nbname" ${ED()} data-ntable="buyers" data-nid="${id}" data-nf="buyer" data-ph="Buyer">${esc(b.buyer)}</div>
+            <div class="nbdom" ${ED()} data-ntable="buyers" data-nid="${id}" data-nf="domain" data-ph="domain.com">${esc(b.domain)}</div>
+            ${b.live?`<a class="livepill" href="#${b.u.id}" title="From the ${esc(b.u.label)} pipeline — editing here adds it to the notable list">2026 pipeline · ${esc(b.u.label)}</a>`:""}
             ${badges?`<div class="alsos">${badges}</div>`:""}</td>
-          ${cell("buyers",b.id,"type",b.type,"PE / SB")}
-          <td>${RO()?`<span class="pill" style="background:${CAT_COLOR[cat]}">${CAT_LABEL[cat]}</span>`
-            :`<select data-ntable="buyers" data-nid="${b.id}" data-nf="category" style="background:${CAT_COLOR[cat]}" aria-label="Category">
+          ${c("type","PE / SB")}
+          <td>${RO()?`<span class="nsec" style="--c:${CAT_COLOR[cat]}">${CAT_LABEL[cat]}</span>`
+            :`<select class="nsec" data-ntable="buyers" data-nid="${id}" data-nf="category" style="--c:${CAT_COLOR[cat]}" aria-label="Move to section" title="Move to another section">
                ${["closure","loi","ioi"].map(o=>`<option value="${o}" ${o===cat?"selected":""}>${CAT_LABEL[o]}</option>`).join("")}</select>`}</td>
-          ${cell("buyers",b.id,"project",b.project,"Project","nstrong")}
-          ${cell("buyers",b.id,"target",b.target,"Target")}
-          ${cell("buyers",b.id,"yearClosed",b.yearClosed,"Year","nyear")}
-          ${cell("buyers",b.id,"yearLaunched",b.yearLaunched,"Year","nyear")}
-          ${cell("buyers",b.id,"buyerLead",b.buyerLead,"Lead","nlead")}
-          ${cell("buyers",b.id,"mandateLead",b.mandateLead,"Lead","nlead")}
-          ${cell("buyers",b.id,"office",b.office,"Office")}
-          ${cell("buyers",b.id,"handledBy",b.handledBy,"Handled by")}
-          ${cell("buyers",b.id,"notes",b.notes,"Notes","nnote")}
-          <td>${RO()?"":`<button class="rowdel" data-ndel="buyers:${b.id}" title="Delete" aria-label="Delete buyer record">×</button>`}</td>
+          ${c("project","Project","nstrong")}
+          ${c("target","Target")}
+          ${c("yearClosed","Year","nyear")}
+          ${c("yearLaunched","Year","nyear")}
+          ${c("buyerLead","Lead","nlead")}
+          ${c("mandateLead","Lead","nlead")}
+          ${c("office","Office")}
+          ${c("handledBy","Handled by")}
+          ${c("notes","Notes","nnote")}
+          <td>${RO()||b.live?"":`<button class="rowdel" data-ndel="buyers:${b.id}" title="Delete" aria-label="Delete buyer record">×</button>`}</td>
         </tr>`;
     }).join("");
     const n=new Set(list.filter(b=>b.buyer).map(nKey)).size;
     return `<section class="bsec" style="--c:${CAT_COLOR[cat]}">
       <header class="bsec-head"><h2>${CAT_LABEL[cat]}</h2><span>${n} buyer${n===1?"":"s"} · ${list.length} project${list.length===1?"":"s"}</span></header>
       ${list.length?`<div class="tscroll"><table class="btable ntable nbuyers">
-        <thead><tr><th>Buyer</th><th>Type</th><th>Category</th><th>Project</th><th>Target</th><th>Year closed</th><th>Year launched</th>
+        <colgroup><col style="width:190px"><col style="width:64px"><col style="width:112px"><col style="width:128px"><col style="width:132px">
+          <col style="width:66px"><col style="width:76px"><col style="width:92px"><col style="width:104px"><col style="width:72px">
+          <col style="width:96px"><col style="width:200px"><col style="width:34px"></colgroup>
+        <thead><tr><th>Buyer</th><th>Type</th><th>Section</th><th>Project</th><th>Target</th><th>Closed</th><th>Launched</th>
           <th>Buyer lead</th><th>Mandate lead</th><th>Office</th><th>Handled by</th><th>Notes</th><th></th></tr></thead>
         <tbody>${rows}</tbody></table></div>`
         :`<p class="bempty">No ${CAT_LABEL[cat]} buyers yet.</p>`}
     </section>`;
-  }).join("")+`<p class="sum-note">Rows marked <b>2026 pipeline</b> come from the unit pages (Buyer column starting “LOI -” or “IOI -”, or a deal at Closure) and are edited there. India's Transaction Type column isn't read as buyers.</p>`;
+  }).join("")+`<p class="sum-note">Rows marked <b>2026 pipeline</b> come from the unit pages (Buyer column starting “LOI -” or “IOI -”, or a deal at Closure). Editing one here adds it to the notable list without changing the unit's deal; the tag links back to the unit. India's Transaction Type column isn't read as buyers.</p>`;
 }
 
 /* =====================================================================
@@ -1587,8 +1617,17 @@ function wireOnce(){
     if(!S||RO()) return;
     const v=el.textContent.trim();
     if(el.dataset.nf){
-      const arr=S[el.dataset.ntable], r=arr&&arr.find(x=>x.id===el.dataset.nid);
-      if(r && r[el.dataset.nf]!==v){ r[el.dataset.nf]=v; save(); render(); }
+      const nid=el.dataset.nid, f=el.dataset.nf;
+      if(nid.startsWith("live:")){
+        const lid=+nid.slice(5), src=notableLive.find(x=>x.lid===lid);
+        if(!src || (src[f]??"")===v) return;                 /* nothing changed — leave it as a pipeline row */
+        const rec=adoptLive(lid); if(!rec) return;
+        rec[f]=v; save(); render();
+        toast("Added to the notable list — the unit's deal is unchanged.");
+        return;
+      }
+      const arr=S[el.dataset.ntable], r=arr&&arr.find(x=>x.id===nid);
+      if(r && r[f]!==v){ r[f]=v; save(); render(); }
       return;
     }
     if(el.dataset.f){
@@ -1621,7 +1660,9 @@ function wireOnce(){
     const t=e.target;
     if(t.id==="stageSel"){ stageFilter=t.value||null; render(); return; }
     if(t.dataset && t.dataset.nf==="category" && S && !RO()){
-      const r=S.buyers.find(x=>x.id===t.dataset.nid); if(r){ r.category=t.value; save(); render(); } return;
+      const nid=t.dataset.nid;
+      const r=nid.startsWith("live:") ? adoptLive(+nid.slice(5)) : S.buyers.find(x=>x.id===nid);
+      if(r){ r.category=t.value; save(); render(); } return;
     }
     if(t.dataset && t.dataset.f==="stage" && S && !RO()){
       const d=S.deals.find(x=>x.id===t.dataset.id);
