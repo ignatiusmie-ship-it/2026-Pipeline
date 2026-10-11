@@ -370,6 +370,61 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .uea b{color:var(--ink);font-variant-numeric:tabular-nums}
 .uempty{padding:24px 16px;color:var(--muted);font-size:13px}
 .lc{text-transform:none}
+.tsub{display:block;margin-top:3px;font-size:11.5px;color:var(--muted)}
+.bsec{background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--c);margin-bottom:20px}
+.bsec-head{display:flex;align-items:baseline;gap:14px;padding:14px 18px;border-bottom:1px solid var(--rule-soft)}
+.bsec-head h2{margin:0;font-size:15px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.bsec-head span{font-size:12px;color:var(--muted)}
+.btable{border-collapse:collapse;width:100%;min-width:720px}
+.btable th{background:none;color:var(--muted);cursor:default;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  font-weight:700;text-align:left;padding:9px 18px;border-bottom:1px solid var(--rule-soft)}
+.btable th:hover{background:none}
+.btable td{padding:12px 18px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+.btable tr:last-child td{border-bottom:0}
+.bname{width:26%}
+.bname b{font-size:14.5px;display:block}
+.btag{display:inline-block;margin-top:3px;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em}
+.alsos{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px}
+.also{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--ink-2);border:1px solid var(--rule);
+  border-left:3px solid var(--c);padding:1px 6px;border-radius:2px;white-space:nowrap}
+.bproj{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);font-size:13px;font-weight:700;
+  background:#F4F6F9;border:1px solid var(--rule-soft);padding:4px 9px;border-radius:2px}
+.pchip:hover{border-color:var(--ink-2)}
+.pchip i{width:7px;height:7px;border-radius:50%;flex:none}
+.pchip span{font-weight:400;color:var(--muted);font-size:12px}
+.bunits{width:12%;font-size:12.5px;color:var(--ink-2)}
+.bcount{width:5%;text-align:right!important;font-variant-numeric:tabular-nums;font-weight:700}
+.bempty,.bnote{margin:0;padding:14px 18px;font-size:12.5px;color:var(--muted)}
+.bnote{border-top:1px solid var(--rule-soft);padding-top:10px;padding-bottom:12px}
+.ntop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.ntabs{display:inline-flex;border:1px solid var(--rule);background:var(--surface)}
+.ntabs button{border:0;border-right:1px solid var(--rule);background:none;padding:10px 18px;font-size:12.5px;font-weight:900;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);border-radius:0}
+.ntabs button:last-child{border-right:0}
+.ntabs button span{margin-left:8px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.ntabs button.on{background:var(--ink);color:#fff}
+.ntabs button.on span{color:#A9B6C9}
+#nlinkbar{margin-bottom:16px}
+.ntable{min-width:1100px}
+.nbuyers{min-width:1400px}
+.ntable td{font-size:13px}
+.ntable td.nstrong,.ntable .nbname{font-weight:700;color:var(--ink)}
+.ntable .nbname{font-size:14px}
+.ntable .nbdom{font-size:11.5px;color:var(--muted);margin-top:2px}
+.ntable td.nyear{white-space:nowrap;font-variant-numeric:tabular-nums}
+.ntable td.nlead{font-weight:700;color:var(--ink-2)}
+.ntable td.nnote{color:var(--ink-2);max-width:260px}
+.ntable td.nb{width:220px}
+.ntable select{font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border:0;border-radius:2px;padding:3px 5px;color:#fff;cursor:pointer;appearance:none;-webkit-appearance:none}
+.ntable tr.nrepeat td{border-top-color:transparent}
+.ntable tr.nrepeat .nbname{color:var(--muted);font-weight:400}
+.ntable tr.nlive td{background:#FAFBFC}
+.ntable a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
+.livepill{display:inline-block;margin-top:4px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--s-book);border:1px solid currentColor;padding:1px 6px;border-radius:2px}
+.ncount{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--ink-2);padding:1px 6px;border-radius:2px;white-space:nowrap}
 .sum-note{font-size:11.5px;color:var(--muted);margin-top:16px}
 
 .toast{
@@ -403,6 +458,7 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
         <a href="#uk" data-view="uk">UK</a>
         <a href="#saas" data-view="saas">SaaS</a>
         <a href="#india" data-view="india">India</a>
+        <a href="#notable" data-view="notable">Notable</a>
         <button type="button" class="navpdf" id="pdfBtn" title="Download the All Business Units page as a PDF" aria-label="Download All Business Units as PDF"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12v2.5h12V12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</button>
       </div>
       <div class="me"><span class="av" id="avatar"></span><span id="meName"></span><button id="signOut">Sign out</button></div>
@@ -466,6 +522,7 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
   </section>
 
   <section id="allView" hidden></section>
+  <section id="notableView" hidden></section>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -534,11 +591,13 @@ const UNITS = [
    ea:["won","sent","lost"], eaEdit:true,  eaDrag:true,  colEdit:false},
   {id:"saas",  label:"SaaS",  folder:"SaaS",  file:"pipeline-saas-2026.json",  currency:"$", stages:[...BASE_STAGES, TERMINATED],
    ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
-  {id:"india", label:"India", folder:"India", file:"pipeline-india-2026.json", currency:"$", stages:BASE_STAGES,
+  {id:"india", label:"India", folder:"India", file:"pipeline-india-2026.json", currency:"$", stages:BASE_STAGES, buyers:false,
    ea:["won","sent","nda","yet","lost"], eaEdit:true, eaDrag:true, colEdit:true,
    cols:{buyer:"Transaction Type"}}
 ];
 const UNIT_BY_ID = Object.fromEntries(UNITS.map(u=>[u.id,u]));
+/* Notable Clients & Buyers: one file in the Documents library root, editable by site members */
+const NOTABLE = {id:"notable", kind:"notable", label:"The notable list", folder:"", file:"notable-clients-buyers.json", stages:[], ea:[]};
 
 /* =====================================================================
    STATE
@@ -593,7 +652,7 @@ const NET_TIMEOUT = window.__PP_NET_TIMEOUT || 20000;     /* per request */
 const SLOW_NOTICE = window.__PP_SLOW || 8000;             /* when to offer "Try again" */
 let slowTimer;
 function setLoading(msg){
-  const l=$("#loading"); l.textContent=msg; l.hidden=false; show("#unitView",false); show("#allView",false);
+  const l=$("#loading"); l.textContent=msg; l.hidden=false; show("#unitView",false); show("#allView",false); show("#notableView",false);
   clearTimeout(slowTimer);
   slowTimer=setTimeout(()=>{
     if(!l.hidden) l.innerHTML=`${esc(msg)}<div class="slow">SharePoint is taking longer than usual.
@@ -608,7 +667,7 @@ function gateCard(el,title,detail,btnLabel,btnAct){
   el.hidden=false;
 }
 function fatal(title,detail){
-  hideLoading(); show("#unitView",false); show("#allView",false);
+  hideLoading(); show("#unitView",false); show("#allView",false); show("#notableView",false);
   gateCard($("#gate"),title,esc(detail),"Try again","reload");
 }
 
@@ -758,7 +817,8 @@ async function startApp(){
 
 function routeFromHash(){
   const h=location.hash.replace(/^#/,"").toLowerCase();
-  return (h==="all"||UNIT_BY_ID[h]) ? h : "";
+  if(h==="buyers") return "notable";
+  return (h==="all"||h==="notable"||UNIT_BY_ID[h]) ? h : "";
 }
 window.addEventListener("hashchange",()=>{
   const r=routeFromHash();
@@ -772,13 +832,15 @@ async function go(id){
     const on=a.dataset.view===id; a.classList.toggle("on",on);
     if(on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
   });
-  if(id==="all") await openAll(false); else await openUnit(UNIT_BY_ID[id]);
+  if(id==="all") await openAll(false);
+  else if(id==="notable") await openNotable();
+  else await openUnit(UNIT_BY_ID[id]);
 }
 
 /* =====================================================================
    SHAREPOINT FILES
    ===================================================================== */
-const filePath   = u=>`/drives/${driveId}/root:/${enc(u.folder+"/"+u.file)}`;
+const filePath   = u=>`/drives/${driveId}/root:/${enc(u.folder ? u.folder+"/"+u.file : u.file)}`;
 const folderPath = u=>`/drives/${driveId}/root:/${enc(u.folder)}`;
 
 async function download(meta){
@@ -800,6 +862,7 @@ async function readUnit(u){
     catch(e){ return {status:"corrupt", meta}; }
   }
   if(r.status===404){
+    if(!u.folder) return {status:"missing", candidates:[]};
     const f=await graph(folderPath(u)+":/children?$top=200");
     if(f.status===404) return {status:"nofolder"};
     if(f.status===403) return {status:"noaccess"};
@@ -855,7 +918,7 @@ async function pushSave(opts={}){
   if(r.status===403){
     noWrite.add(u.id); sync.dirty=false;
     toast(`You can view ${u.label} but not edit it — that change wasn't saved.`);
-    await openUnit(u);
+    await reopen(u);
     return;
   }
   if(r.status===401){ sync.error="auth"; setSyncBar(); return; }
@@ -925,7 +988,19 @@ function blankState(u){
           eaOrder:[...u.ea], cols:Object.assign({},COL_DEFAULTS,u.cols||{})};
 }
 /* accepts files saved by any earlier version of the dashboards */
+const NB_FIELDS=["buyer","domain","type","category","project","target","yearClosed","yearLaunched","buyerLead","mandateLead","office","handledBy","notes"];
+const NC_FIELDS=["project","company","yearLaunched","status","mandateLead","type","focus","office","handledBy"];
+function normaliseNotable(d){
+  const src=(d&&typeof d==="object")?d:{};
+  const fix=(arr,fields,pre)=>(Array.isArray(arr)?arr:[]).filter(x=>x&&typeof x==="object").map((x,i)=>{
+    const o={id:x.id?String(x.id):pre+Date.now().toString(36)+i};
+    fields.forEach(f=>o[f]=x[f]==null?"":String(x[f])); return o; });
+  const out=Object.assign({}, src, {buyers:fix(src.buyers,NB_FIELDS,"b"), clients:fix(src.clients,NC_FIELDS,"c")});
+  out.buyers.forEach(b=>{ if(!["closure","loi","ioi"].includes(b.category)) b.category="closure"; });
+  return out;
+}
 function normalise(d,u){
+  if(u.kind==="notable") return normaliseNotable(d);
   const b=blankState(u);
   const s=Object.assign({}, b, (d&&typeof d==="object")?d:{});
   const valid=new Set(u.stages.map(x=>x.id));
@@ -975,19 +1050,21 @@ async function openUnit(u){
   if(res.status==="ok"){ S=normalise(res.data,u); applyMeta(res.meta); sync.exists=true; }
   else { S=blankState(u); sync.candidates=res.candidates||[]; }
 
-  hideLoading(); show("#allView",false); show("#unitView",true);
+  hideLoading(); show("#allView",false); show("#notableView",false); show("#unitView",true);
   show("#unitMsg",false); show("#unitBody",true);
   render(); setSyncBar();
 }
 function unitMessage(title,html){
-  hideLoading(); show("#allView",false); show("#unitView",true);
+  hideLoading(); show("#allView",false); show("#notableView",false); show("#unitView",true);
   show("#unitBody",false);
   gateCard($("#unitMsg"),title,html,"Try again","retryview");
   renderHead();
 }
 
+const reopen = u=>u.kind==="notable" ? openNotable() : openUnit(u);
 function render(){
   if(!U||!S) return;
+  if(U.kind==="notable"){ document.body.classList.toggle("ro",RO()); renderHead(); renderNotable(); return; }
   document.body.classList.toggle("ro",RO());
   renderHead(); renderCols(); renderRail(); renderTable(); renderEA();
 }
@@ -995,8 +1072,9 @@ function render(){
 function renderHead(){
   const badge=$("#unitBadge"), t=$("#titleMain"), a=$("#titleAccent"), reg=$("#registerTitle");
   t.textContent=BRAND.name; a.textContent=BRAND.accent;          /* firm-wide, same on every page */
+  if(U && U.kind==="notable"){ badge.textContent="Notable Clients & Buyers"; return; }
   if(view==="all"||!S){
-    badge.textContent = view==="all" ? "All Business Units" : (U?U.label:BRAND.accent);
+    badge.textContent = view==="all" ? "All Business Units" : view==="notable" ? "Notable Clients & Buyers" : (U?U.label:BRAND.accent);
     return;
   }
   badge.textContent=U.label;
@@ -1121,7 +1199,7 @@ function renderEA(){
 }
 
 function setSyncBar(){
-  const b=$("#linkbar"); if(!b||!U) return;
+  const b=$(U&&U.kind==="notable"?"#nlinkbar":"#linkbar"); if(!b||!U) return;
   let cls="linkbar", msg="", acts="";
   if(sync.conflict){
     cls+=" bad";
@@ -1139,6 +1217,9 @@ function setSyncBar(){
     cls+=" warn"; msg="Saving to SharePoint…";
   }else if(sync.dirty){
     cls+=" warn"; msg="Saving shortly…";
+  }else if(!sync.exists && U.kind==="notable"){
+    cls+=" warn";
+    msg=`Nothing saved yet. Upload <b>${esc(U.file)}</b> to the Pipeline 2026 Documents library, or start adding rows.`;
   }else if(!sync.exists){
     cls+=" warn";
     msg=`No pipeline saved for <b>${esc(U.label)}</b> yet. Add a deal to start one, or load a saved copy.`;
@@ -1167,7 +1248,7 @@ async function openAll(silent){
   const results=await Promise.all(UNITS.map(u=>
     readUnit(u).then(res=>({u,res})).catch(e=>({u,res:{status:"error",error:e}}))));
   if(seq!==navSeq||view!=="all") return;
-  hideLoading(); show("#unitView",false); show("#allView",true);
+  hideLoading(); show("#unitView",false); show("#notableView",false); show("#allView",true);
   renderAll(results);
 }
 
@@ -1235,6 +1316,197 @@ function renderAll(results){
     </div>
     <div class="sum-grid">${cards}</div>
     <p class="sum-note">${reporting} of ${UNITS.length} business units reporting. Tracked EV adds the EV entered on each deal except Passive and Terminated ones, and includes Closed EV. Ranges count their lower end. Refreshes every minute.</p>`;
+}
+
+
+/* =====================================================================
+   NOTABLE BUYERS — built from the Buyer column of every unit.
+     Deal Closure : deals at the Closure stage
+     LOI / IOI    : Buyer text starting "LOI -" / "IOI -"
+   One row per buyer per section, listing every project they're on.
+   ===================================================================== */
+const OFFER_RE=/^\s*(LOI|IOI)\b\s*[-–—:]?\s*/i;
+const PLACEHOLDER_RE=/^(stage|tbd|tba|n\/?a|unknown|[-–—]+)?$/i;
+const BUYER_SECTIONS=[
+  {k:"closure", title:"Deal Closure", noun:"closed deal",  color:"var(--s-closure)",
+   empty:"No closed deals with a named buyer yet. They appear here when a deal reaches the Closure stage."},
+  {k:"loi",     title:"LOI",          noun:"LOI",          color:"var(--s-live)",
+   empty:"No LOIs recorded yet. They're picked up when a deal's Buyer starts with \u201cLOI -\u201d, e.g. \u201cLOI - King & Partners / SB\u201d."},
+  {k:"ioi",     title:"IOI",          noun:"IOI",          color:"var(--s-book)",
+   empty:"No IOIs recorded yet. They're picked up when a deal's Buyer starts with \u201cIOI -\u201d, e.g. \u201cIOI - Black Lake Capital\u201d."}
+];
+function parseBuyer(text){
+  const raw=String(text||"").trim();
+  const m=raw.match(OFFER_RE);
+  const offer=m?m[1].toUpperCase():null;
+  const rest=(m?raw.slice(m[0].length):raw).trim();
+  const parts=rest.split("/").map(x=>x.trim()).filter(Boolean);
+  let name=parts[0]||"";
+  if(PLACEHOLDER_RE.test(name)) name="";
+  return {offer, name, tag:parts.slice(1).join(" / ")};
+}
+const buyerKey=n=>String(n||"").toLowerCase().replace(/\(\s*pe\s*\)/g,"").replace(/[.,]/g,"").replace(/\s+/g," ").trim();
+/* a buyer record is grouped on its name before any "/" — "Presidio Investors/RTS" sits with "Presidio Investors" */
+const nKey=b=>buyerKey(parseBuyer(b.buyer).name||b.buyer);
+
+function collectBuyers(results){
+  const map=new Map(), unnamed={closure:0,loi:0,ioi:0}, skipped=[], included=[];
+  for(const {u,res} of results){
+    if(u.buyers===false){ skipped.push({u,why:"its Buyer column is used for Transaction Type"}); continue; }
+    if(res.status!=="ok"){
+      if(res.status!=="missing") skipped.push({u,why:res.status==="noaccess"?"you don't have access":"it couldn't be loaded"});
+      continue;
+    }
+    included.push(u);
+    const s=normalise(res.data,u), stageOf=Object.fromEntries(u.stages.map(x=>[x.id,x]));
+    for(const d of s.deals){
+      const p=parseBuyer(d.buyer);
+      const sec = d.stage==="closure" ? "closure" : p.offer==="LOI" ? "loi" : p.offer==="IOI" ? "ioi" : null;
+      if(!sec) continue;
+      if(!p.name){ unnamed[sec]++; continue; }
+      const key=buyerKey(p.name);
+      if(!map.has(key)) map.set(key,{name:p.name, tags:new Set(), entries:{closure:[],loi:[],ioi:[]}});
+      const b=map.get(key);
+      if(p.tag) b.tags.add(p.tag);
+      b.entries[sec].push({u, project:d.project||"Untitled", ev:d.ev, status:d.status, stage:stageOf[d.stage]});
+    }
+  }
+  return {buyers:[...map.values()], unnamed, skipped, included};
+}
+
+/* =====================================================================
+   NOTABLE CLIENTS & BUYERS
+   Clients and Buyers are editable records saved to notable-clients-buyers.json.
+   Buyers also shows, read-only, the closures / LOIs / IOIs in the 2026 pipeline.
+   ===================================================================== */
+let notableTab="clients", notableLive=[];
+async function openNotable(){
+  const seq=++navSeq, u=NOTABLE;
+  U=u; S=null; SC={}; sortBy=null; stageFilter=null; closeDrawer();
+  sync=freshSync(); sync.canEdit=!noWrite.has(u.id);
+  renderHead(); document.title=`Notable Clients & Buyers — ${BRAND.name} ${BRAND.accent}`;
+  setLoading("Loading notable clients and buyers…");
+  let res, units;
+  try{
+    [res,units]=await Promise.all([readUnit(u), Promise.all(UNITS.map(x=>
+      readUnit(x).then(r=>({u:x,res:r})).catch(e=>({u:x,res:{status:"error",error:e}}))))]);
+  }catch(e){ if(seq===navSeq) notableMessage(e.title||"Couldn't load the notable list.", esc(e.detail||e.message||String(e))); return; }
+  if(seq!==navSeq) return;
+  if(res.status==="noaccess") return notableMessage("You don't have access to the notable list.","Ask the Pipeline 2026 site owner for access.");
+  if(res.status==="corrupt") return notableMessage("The notable list couldn't be read.",
+    `${esc(u.file)} in SharePoint isn't valid. Open it there and restore an earlier version from Version history.`);
+  if(res.status==="ok"){ S=normalise(res.data,u); applyMeta(res.meta); sync.exists=true; }
+  else S=normaliseNotable({});
+  notableLive=liveBuyerRows(units);
+  hideLoading(); show("#unitView",false); show("#allView",false); show("#notableView",true);
+  render();
+}
+function notableMessage(title,html){
+  hideLoading(); show("#unitView",false); show("#allView",false); show("#notableView",true);
+  $("#notableView").innerHTML=`<section class="gate"><h2>${esc(title)}</h2><p>${html}</p><button class="primary" data-act="retryview">Try again</button></section>`;
+}
+/* closures / LOIs / IOIs from the unit pipelines, one row per buyer per project */
+function liveBuyerRows(units){
+  const {buyers}=collectBuyers(units), rows=[];
+  for(const b of buyers) for(const k of ["closure","loi","ioi"]) for(const e of b.entries[k])
+    rows.push({live:true, buyer:b.name, type:[...b.tags].join(", "), category:k, project:e.project, u:e.u,
+               yearClosed:k==="closure"?"2026":"", notes:e.status||e.stage.label, ev:e.ev});
+  return rows;
+}
+const CAT_LABEL={closure:"Deal Closure", loi:"LOI", ioi:"IOI"};
+const CAT_COLOR={closure:"var(--s-closure)", loi:"var(--s-live)", ioi:"var(--s-book)"};
+const cell=(table,id,f,val,ph,cls="")=>`<td class="${cls}" ${ED()} data-ntable="${table}" data-nid="${id}" data-nf="${f}" data-ph="${esc(ph)}">${esc(val)}</td>`;
+
+function renderNotable(){
+  const saved=S.buyers.map(b=>Object.assign({live:false},b));
+  const savedKeys=new Set(saved.map(b=>nKey(b)+"|"+(b.project||"").toLowerCase().trim()));
+  const live=notableLive.filter(r=>!savedKeys.has(nKey(r)+"|"+r.project.toLowerCase().trim()));
+  const all=[...saved,...live];
+  const tab=(k,label,n)=>`<button role="tab" data-ntab="${k}" aria-selected="${notableTab===k}" class="${notableTab===k?"on":""}">${label}<span>${n}</span></button>`;
+  const uniqueBuyers=new Set(all.filter(b=>b.buyer).map(nKey)).size;
+  $("#notableView").innerHTML=`
+    <div class="ntop">
+      <div class="ntabs" role="tablist">${tab("clients","Notable Clients",S.clients.length)}${tab("buyers","Notable Buyers",uniqueBuyers)}</div>
+      <button class="primary edit-only" data-nadd="${notableTab}">${notableTab==="clients"?"Add client":"Add buyer"}</button>
+    </div>
+    <div class="linkbar" id="nlinkbar"></div>
+    ${notableTab==="clients" ? clientsTable() : buyersTables(all)}`;
+  setSyncBar();
+}
+
+function clientsTable(){
+  const rows=S.clients.map(c=>`<tr data-nrow="${c.id}">
+      ${cell("clients",c.id,"project",c.project,"Project","nstrong")}
+      ${cell("clients",c.id,"company",c.company,"Company")}
+      ${cell("clients",c.id,"yearLaunched",c.yearLaunched,"Year","nyear")}
+      ${cell("clients",c.id,"status",c.status,"Status")}
+      ${cell("clients",c.id,"mandateLead",c.mandateLead,"Lead","nlead")}
+      ${cell("clients",c.id,"type",c.type,"Type")}
+      ${cell("clients",c.id,"focus",c.focus,"Focus")}
+      ${cell("clients",c.id,"office",c.office,"Office")}
+      ${cell("clients",c.id,"handledBy",c.handledBy,"Handled by")}
+      <td>${RO()?"":`<button class="rowdel" data-ndel="clients:${c.id}" title="Delete client" aria-label="Delete client">×</button>`}</td>
+    </tr>`).join("");
+  return `<section class="bsec" style="--c:var(--signal)">
+    <header class="bsec-head"><h2>Notable Clients</h2><span>${S.clients.length} mandate${S.clients.length===1?"":"s"} · sell side</span></header>
+    ${S.clients.length?`<div class="tscroll"><table class="btable ntable">
+      <thead><tr><th>Project</th><th>Company</th><th>Year launched</th><th>Status</th><th>Mandate lead</th><th>Type</th><th>Focus</th><th>Office</th><th>Handled by</th><th></th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`
+      :`<p class="bempty">No clients yet.${RO()?"":" Click <b>Add client</b> to start the list."}</p>`}
+  </section>`;
+}
+
+function buyersTables(all){
+  const byKey={};
+  all.forEach(b=>{ if(!b.buyer) return; const k=nKey(b); (byKey[k]=byKey[k]||{closure:0,loi:0,ioi:0})[b.category]++; });
+  const yr=x=>/^\d{4}$/.test(x||"")?+x:0;
+  return ["closure","loi","ioi"].map(cat=>{
+    const list=all.filter(b=>b.category===cat).sort((a,b)=>
+      (a.buyer?0:-1)-(b.buyer?0:-1) || nKey(a).localeCompare(nKey(b)) || yr(b.yearClosed)-yr(a.yearClosed));
+    let prev=null;
+    const rows=list.map(b=>{
+      const k=nKey(b), first=k!==prev; prev=k;
+      const counts=byKey[k]||{closure:0,loi:0,ioi:0};
+      const badges=first&&b.buyer ? [
+        counts[cat]>1?`<span class="ncount">${counts[cat]} projects</span>`:"",
+        ...["closure","loi","ioi"].filter(o=>o!==cat&&counts[o]).map(o=>`<span class="also" style="--c:${CAT_COLOR[o]}">also ${CAT_LABEL[o]} ×${counts[o]}</span>`)
+      ].join("") : "";
+      if(b.live) return `<tr class="nlive${first?"":" nrepeat"}">
+          <td class="nb"><div class="nbname">${esc(b.buyer)}</div><span class="livepill">2026 pipeline · ${esc(b.u.label)}</span>${badges?`<div class="alsos">${badges}</div>`:""}</td>
+          <td>${esc(b.type)}</td><td><span class="pill" style="background:${CAT_COLOR[cat]}">${CAT_LABEL[cat]}</span></td>
+          <td class="nstrong"><a href="#${b.u.id}">${esc(b.project)}</a></td><td></td>
+          <td class="nyear">${esc(b.yearClosed)}</td><td class="nyear"></td><td></td><td></td>
+          <td>${esc(b.u.label)}</td><td></td><td class="nnote">${esc(b.notes)}${b.ev?" · "+esc(b.ev):""}</td><td></td></tr>`;
+      return `<tr data-nrow="${b.id}" class="${first?"":"nrepeat"}">
+          <td class="nb"><div class="nbname" ${ED()} data-ntable="buyers" data-nid="${b.id}" data-nf="buyer" data-ph="Buyer">${esc(b.buyer)}</div>
+            <div class="nbdom" ${ED()} data-ntable="buyers" data-nid="${b.id}" data-nf="domain" data-ph="${RO()?"":"domain.com"}">${esc(b.domain)}</div>
+            ${badges?`<div class="alsos">${badges}</div>`:""}</td>
+          ${cell("buyers",b.id,"type",b.type,"PE / SB")}
+          <td>${RO()?`<span class="pill" style="background:${CAT_COLOR[cat]}">${CAT_LABEL[cat]}</span>`
+            :`<select data-ntable="buyers" data-nid="${b.id}" data-nf="category" style="background:${CAT_COLOR[cat]}" aria-label="Category">
+               ${["closure","loi","ioi"].map(o=>`<option value="${o}" ${o===cat?"selected":""}>${CAT_LABEL[o]}</option>`).join("")}</select>`}</td>
+          ${cell("buyers",b.id,"project",b.project,"Project","nstrong")}
+          ${cell("buyers",b.id,"target",b.target,"Target")}
+          ${cell("buyers",b.id,"yearClosed",b.yearClosed,"Year","nyear")}
+          ${cell("buyers",b.id,"yearLaunched",b.yearLaunched,"Year","nyear")}
+          ${cell("buyers",b.id,"buyerLead",b.buyerLead,"Lead","nlead")}
+          ${cell("buyers",b.id,"mandateLead",b.mandateLead,"Lead","nlead")}
+          ${cell("buyers",b.id,"office",b.office,"Office")}
+          ${cell("buyers",b.id,"handledBy",b.handledBy,"Handled by")}
+          ${cell("buyers",b.id,"notes",b.notes,"Notes","nnote")}
+          <td>${RO()?"":`<button class="rowdel" data-ndel="buyers:${b.id}" title="Delete" aria-label="Delete buyer record">×</button>`}</td>
+        </tr>`;
+    }).join("");
+    const n=new Set(list.filter(b=>b.buyer).map(nKey)).size;
+    return `<section class="bsec" style="--c:${CAT_COLOR[cat]}">
+      <header class="bsec-head"><h2>${CAT_LABEL[cat]}</h2><span>${n} buyer${n===1?"":"s"} · ${list.length} project${list.length===1?"":"s"}</span></header>
+      ${list.length?`<div class="tscroll"><table class="btable ntable nbuyers">
+        <thead><tr><th>Buyer</th><th>Type</th><th>Category</th><th>Project</th><th>Target</th><th>Year closed</th><th>Year launched</th>
+          <th>Buyer lead</th><th>Mandate lead</th><th>Office</th><th>Handled by</th><th>Notes</th><th></th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`
+        :`<p class="bempty">No ${CAT_LABEL[cat]} buyers yet.</p>`}
+    </section>`;
+  }).join("")+`<p class="sum-note">Rows marked <b>2026 pipeline</b> come from the unit pages (Buyer column starting “LOI -” or “IOI -”, or a deal at Closure) and are edited there. India's Transaction Type column isn't read as buyers.</p>`;
 }
 
 /* =====================================================================
@@ -1314,6 +1586,11 @@ function wireOnce(){
     if(!el||!el.dataset||!(el.isContentEditable||(el.hasAttribute&&el.hasAttribute("contenteditable")))) return;
     if(!S||RO()) return;
     const v=el.textContent.trim();
+    if(el.dataset.nf){
+      const arr=S[el.dataset.ntable], r=arr&&arr.find(x=>x.id===el.dataset.nid);
+      if(r && r[el.dataset.nf]!==v){ r[el.dataset.nf]=v; save(); render(); }
+      return;
+    }
     if(el.dataset.f){
       const d=S.deals.find(x=>x.id===el.dataset.id);
       if(d && d[el.dataset.f]!==v){ d[el.dataset.f]=v; save(); render(); }
@@ -1343,6 +1620,9 @@ function wireOnce(){
   document.addEventListener("change",e=>{
     const t=e.target;
     if(t.id==="stageSel"){ stageFilter=t.value||null; render(); return; }
+    if(t.dataset && t.dataset.nf==="category" && S && !RO()){
+      const r=S.buyers.find(x=>x.id===t.dataset.nid); if(r){ r.category=t.value; save(); render(); } return;
+    }
     if(t.dataset && t.dataset.f==="stage" && S && !RO()){
       const d=S.deals.find(x=>x.id===t.dataset.id);
       if(d){ d.stage=t.value; save(); render(); }
@@ -1359,20 +1639,35 @@ function wireOnce(){
 
   document.addEventListener("click",async e=>{
     if(e.target.isContentEditable) return;
-    const t=e.target.closest("[data-act],[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort],[data-filter]");
+    const t=e.target.closest("[data-act],[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort],[data-filter],[data-ntab],[data-nadd],[data-ndel]");
     if(!t) return;
     const act=t.dataset.act;
     if(act==="reload"){ location.reload(); return; }
     if(act==="retryview"){ if(view) await go(view); return; }
     if(act==="signin"){ signIn(); return; }
     if(act==="retry"){ sync.error=null; pushSave(); return; }
-    if(act==="theirs"){ sync.conflict=false; sync.dirty=false; await openUnit(U); return; }
+    if(act==="theirs"){ sync.conflict=false; sync.dirty=false; await reopen(U); return; }
     if(act==="mine"){ sync.conflict=false; sync.dirty=true; editVer++; await pushSave({overwrite:true}); return; }
     if(act==="usecand"){ await useCandidate(t.dataset.id); return; }
     if(!S) return;
+    if(t.dataset.ntab){ notableTab=t.dataset.ntab; render(); return; }
     if(t.dataset.filter){ stageFilter=stageFilter===t.dataset.filter?null:t.dataset.filter; render(); return; }
     if(t.dataset.sort){ if(sortBy===t.dataset.sort) sortDir*=-1; else { sortBy=t.dataset.sort; sortDir=1; } renderTable(); return; }
     if(RO()) return;
+    if(t.dataset.nadd){
+      const k=t.dataset.nadd, id=(k==="clients"?"c":"b")+Date.now().toString(36);
+      const row=Object.fromEntries((k==="clients"?NC_FIELDS:NB_FIELDS).map(f=>[f,""])); row.id=id;
+      if(k==="buyers") row.category="closure";
+      S[k].unshift(row); render();
+      const first=document.querySelector(`[data-nid="${id}"][data-nf="${k==="clients"?"project":"buyer"}"]`); if(first) first.focus();
+      return;
+    }
+    if(t.dataset.ndel){
+      const [k,id]=t.dataset.ndel.split(":"), r=S[k].find(x=>x.id===id);
+      const label=r&&(r.buyer||r.project||r.company)||"this row";
+      if(r && confirm(`Delete “${label}” from Notable ${k==="clients"?"Clients":"Buyers"}?`)){ S[k]=S[k].filter(x=>x.id!==id); save(); render(); }
+      return;
+    }
     if(t.dataset.open) openDrawer(t.dataset.open);
     else if(t.dataset.del){
       const d=S.deals.find(x=>x.id===t.dataset.del);
