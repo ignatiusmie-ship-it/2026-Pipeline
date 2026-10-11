@@ -421,7 +421,14 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .ntable{min-width:1100px}
 /* placeholders only while typing — an empty cell stays empty */
 .ntable [contenteditable]:empty:not(:focus):before{content:""}
-.nbuyers{table-layout:fixed;width:1366px;min-width:1366px}
+.nbuyers{table-layout:fixed;width:100%;min-width:1218px}
+/* frozen headers: the section name and its column titles stay at the top while you scroll that section.
+   Needs the table to sit directly in the page, so the sideways-scroll box is only used on narrow screens. */
+#notableView .bsec{border-top-width:1px}
+#notableView .bsec-head{position:sticky;top:0;z-index:3;background:var(--surface);height:52px;box-sizing:border-box;align-items:center;border-top:4px solid var(--c)}
+.nbuyers thead th{position:sticky;top:52px;z-index:2;background:var(--surface);box-shadow:inset 0 -1px 0 var(--rule)}
+.nscroll{overflow:visible}
+@media (max-width:1290px){ .nscroll{overflow-x:auto} }
 .nbuyers td{overflow-wrap:break-word}
 .nsec{display:inline-block;font-family:inherit;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;
   color:var(--c);background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--c);border-radius:2px;padding:3px 6px;white-space:nowrap}
@@ -1409,7 +1416,7 @@ function collectBuyers(results){
    ===================================================================== */
 /* Notable Clients is hidden for now; its data stays in the file and is saved untouched */
 let notableLive=[];
-const NF_EMPTY={q:"",cat:"",type:"",year:"",blead:"",mlead:"",office:"",src:""};
+const NF_EMPTY={q:"",cat:"",type:"",year:"",blead:"",mlead:"",src:""};
 let nf=Object.assign({},NF_EMPTY);
 async function openNotable(){
   const seq=++navSeq, u=NOTABLE;
@@ -1477,13 +1484,13 @@ function notableRows(){
   return [...saved, ...notableLive.filter(r=>!savedKeys.has(rk(r)))];
 }
 const nnorm=x=>String(x||"").trim().toLowerCase();
-const NF_FIELD={type:"type", blead:"buyerLead", mlead:"mandateLead", office:"office", year:"yearClosed"};
+const NF_FIELD={type:"type", blead:"buyerLead", mlead:"mandateLead", year:"yearClosed"};
 function nfActive(){ return Object.keys(NF_EMPTY).some(k=>nf[k]); }
 function matchesNF(b){
   if(!b.live && !b.buyer && !b.project) return true;            /* a row just added stays visible while you fill it in */
   if(nf.cat && b.category!==nf.cat) return false;
   if(nf.src && (nf.src==="live")!==!!b.live) return false;
-  for(const k of ["type","blead","mlead","office","year"]) if(nf[k] && nnorm(b[NF_FIELD[k]])!==nf[k]) return false;
+  for(const k of ["type","blead","mlead","year"]) if(nf[k] && nnorm(b[NF_FIELD[k]])!==nf[k]) return false;
   if(nf.q){ const q=nnorm(nf.q); if(![b.buyer,b.project,b.target,b.domain].some(x=>nnorm(x).includes(q))) return false; }
   return true;
 }
@@ -1520,7 +1527,6 @@ function renderNotable(){
     sel("year","Any year closed",nfOptions(all,"yearClosed",true))+
     sel("blead","Any buyer lead",nfOptions(all,"buyerLead"))+
     sel("mlead","Any mandate lead",nfOptions(all,"mandateLead"))+
-    sel("office","Any office",nfOptions(all,"office"))+
     sel("src","All sources",[["list","Notable list"],["live","2026 pipeline"]]);
   renderNotableBody(all);
   setSyncBar();
@@ -1592,8 +1598,6 @@ function buyersTables(all,shown){
           ${c("yearLaunched","Year","nyear")}
           ${c("buyerLead","Lead","nlead")}
           ${c("mandateLead","Lead","nlead")}
-          ${c("office","Office")}
-          ${c("handledBy","Handled by")}
           ${c("notes","Notes","nnote")}
           <td>${RO()||b.live?"":`<button class="rowdel" data-ndel="buyers:${b.id}" title="Delete" aria-label="Delete buyer record">×</button>`}</td>
         </tr>`;
@@ -1601,12 +1605,11 @@ function buyersTables(all,shown){
     const n=new Set(list.filter(b=>b.buyer).map(nKey)).size;
     return `<section class="bsec" style="--c:${CAT_COLOR[cat]}">
       <header class="bsec-head"><h2>${CAT_LABEL[cat]}</h2><span>${n} buyer${n===1?"":"s"} · ${list.length} project${list.length===1?"":"s"}</span></header>
-      ${list.length?`<div class="tscroll"><table class="btable ntable nbuyers">
+      ${list.length?`<div class="nscroll"><table class="btable ntable nbuyers">
         <colgroup><col style="width:190px"><col style="width:64px"><col style="width:112px"><col style="width:128px"><col style="width:132px">
-          <col style="width:66px"><col style="width:76px"><col style="width:92px"><col style="width:104px"><col style="width:72px">
-          <col style="width:96px"><col style="width:200px"><col style="width:34px"></colgroup>
+          <col style="width:66px"><col style="width:76px"><col style="width:92px"><col style="width:104px"><col style="width:220px"><col style="width:34px"></colgroup>
         <thead><tr><th>Buyer</th><th>Type</th><th>Section</th><th>Project</th><th>Target</th><th>Closed</th><th>Launched</th>
-          <th>Buyer lead</th><th>Mandate lead</th><th>Office</th><th>Handled by</th><th>Notes</th><th></th></tr></thead>
+          <th>Buyer lead</th><th>Mandate lead</th><th>Notes</th><th></th></tr></thead>
         <tbody>${rows}</tbody></table></div>`
         :`<p class="bempty">No ${CAT_LABEL[cat]} buyers yet.</p>`}
     </section>`;
