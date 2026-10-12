@@ -1480,8 +1480,10 @@ const CAT_COLOR={closure:"var(--s-closure)", loi:"var(--s-live)", ioi:"var(--s-b
 const cell=(table,id,f,val,ph,cls="")=>`<td class="${cls}" ${ED()} data-ntable="${table}" data-nid="${id}" data-nf="${f}" data-ph="${esc(ph)}">${esc(val)}</td>`;
 
 function notableRows(){
-  const saved=S.buyers.map(b=>Object.assign({live:false},b));
   const rk=b=>nKey(b)+"|"+(b.project||"").toLowerCase().trim()+"|"+b.category;
+  const liveByKey=new Map(notableLive.map(r=>[rk(r),r]));
+  /* edited pipeline rows keep their link: "link" is the unit whose deal they came from */
+  const saved=S.buyers.map(b=>{ const l=liveByKey.get(rk(b)); return Object.assign({live:false, link:l?l.u:null}, b); });
   const savedKeys=new Set(saved.map(rk));
   return [...saved, ...notableLive.filter(r=>!savedKeys.has(rk(r)))];
 }
@@ -1491,7 +1493,7 @@ function nfActive(){ return Object.keys(NF_EMPTY).some(k=>nf[k]); }
 function matchesNF(b){
   if(!b.live && !b.buyer && !b.project) return true;            /* a row just added stays visible while you fill it in */
   if(nf.cat && b.category!==nf.cat) return false;
-  if(nf.src && (nf.src==="live")!==!!b.live) return false;
+  if(nf.src && (nf.src==="live")!==!!(b.live||b.link)) return false;
   for(const k of ["type","blead","mlead","year"]) if(nf[k] && nnorm(b[NF_FIELD[k]])!==nf[k]) return false;
   if(nf.q){ const q=nnorm(nf.q); if(![b.buyer,b.project,b.target,b.domain].some(x=>nnorm(x).includes(q))) return false; }
   return true;
@@ -1529,7 +1531,7 @@ function renderNotable(){
     sel("year","Any year closed",nfOptions(all,"yearClosed",true))+
     sel("blead","Any buyer lead",nfOptions(all,"buyerLead"))+
     sel("mlead","Any mandate lead",nfOptions(all,"mandateLead"))+
-    sel("src","All sources",[["list","Notable list"],["live","2026 pipeline"]]);
+    sel("src","All sources",[["live","2026 pipeline"],["list","Historic list"]]);
   renderNotableBody(all);
   setSyncBar();
 }
@@ -1588,7 +1590,8 @@ function buyersTables(all,shown){
       return `<tr ${b.live?"":`data-nrow="${b.id}"`} class="${b.live?"nlive":""}${first?"":" nrepeat"}">
           <td class="nb"><div class="nbname" ${ED()} data-ntable="buyers" data-nid="${id}" data-nf="buyer" data-ph="Buyer">${esc(b.buyer)}</div>
             <div class="nbdom" ${ED()} data-ntable="buyers" data-nid="${id}" data-nf="domain" data-ph="domain.com">${esc(b.domain)}</div>
-            ${b.live?`<a class="livepill" href="#${b.u.id}" title="From the ${esc(b.u.label)} pipeline — editing here adds it to the notable list">2026 pipeline · ${esc(b.u.label)}</a>`:""}
+            ${b.live?`<a class="livepill" href="#${b.u.id}" title="From the ${esc(b.u.label)} pipeline — editing here adds it to the notable list">2026 pipeline · ${esc(b.u.label)}</a>`
+              :b.link?`<a class="livepill" href="#${b.link.id}" title="Linked to a deal in the ${esc(b.link.label)} pipeline">2026 pipeline · ${esc(b.link.label)}</a>`:""}
             ${badges?`<div class="alsos">${badges}</div>`:""}</td>
           ${c("type","PE / SB")}
           <td>${RO()?`<span class="nsec" style="--c:${CAT_COLOR[cat]}">${CAT_LABEL[cat]}</span>`
