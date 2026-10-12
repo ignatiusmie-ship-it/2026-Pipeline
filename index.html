@@ -30,6 +30,7 @@
   --s-book:#0E7490;
   --s-passive:#9AA7B8;
   --s-early:#2F7FD8;
+  --s-fundraise:#B7791F;
 
   --won:#12994B;
   --lost:#D22630;
@@ -630,6 +631,9 @@ const UNITS = [
    cols:{buyer:"Transaction Type"}}
 ];
 const UNIT_BY_ID = Object.fromEntries(UNITS.map(u=>[u.id,u]));
+/* Notable Buyers sections, in display order */
+const CATS=["closure","loi","ioi","fundraise"];
+const zeroCats=()=>({closure:0,loi:0,ioi:0,fundraise:0});
 /* Notable Clients & Buyers: one file in the Documents library root, editable by site members */
 const NOTABLE = {id:"notable", kind:"notable", label:"The notable list", folder:"", file:"notable-clients-buyers.json", stages:[], ea:[]};
 
@@ -1028,10 +1032,12 @@ function normaliseNotable(d){
   const src=(d&&typeof d==="object")?d:{};
   const fix=(arr,fields,pre)=>(Array.isArray(arr)?arr:[]).filter(x=>x&&typeof x==="object").map((x,i)=>{
     const o={id:x.id?String(x.id):pre+Date.now().toString(36)+i};
-    fields.forEach(f=>o[f]=x[f]==null?"":String(x[f])); return o; });
+    fields.forEach(f=>o[f]=x[f]==null?"":String(x[f]));
+    if(x.srcKey) o.srcKey=String(x.srcKey);              /* link back to the pipeline deal it came from */
+    return o; });
   const out=Object.assign({}, src, {buyers:fix(src.buyers,NB_FIELDS,"b"), clients:fix(src.clients,NC_FIELDS,"c")});
   out.buyers.forEach(b=>{
-    if(!["closure","loi","ioi"].includes(b.category)) b.category="closure";
+    if(!CATS.includes(b.category)) b.category="closure";
     if(!b.target && b.project.includes("/")) Object.assign(b, splitProject(b.project));
   });
   return out;
@@ -1362,7 +1368,7 @@ function renderAll(results){
      LOI / IOI    : Buyer text starting "LOI -" / "IOI -"
    One row per buyer per section, listing every project they're on.
    ===================================================================== */
-const OFFER_RE=/^\s*(LOI|IOI)\b\s*[-–—:]?\s*/i;
+const OFFER_RE=/^\s*(LOI|IOI|FR|Fund\s*-?\s*rais(?:e|ing))\b\s*[-–—:]?\s*/i;
 const PLACEHOLDER_RE=/^(stage|tbd|tba|n\/?a|unknown|[-–—]+)?$/i;
 const BUYER_SECTIONS=[
   {k:"closure", title:"Deal Closure", noun:"closed deal",  color:"var(--s-closure)",
@@ -1375,7 +1381,7 @@ const BUYER_SECTIONS=[
 function parseBuyer(text){
   const raw=String(text||"").trim();
   const m=raw.match(OFFER_RE);
-  const offer=m?m[1].toUpperCase():null;
+  const offer=m?(/^(fr|fund)/i.test(m[1])?"FR":m[1].toUpperCase()):null;
   const rest=(m?raw.slice(m[0].length):raw).trim();
   const parts=rest.split("/").map(x=>x.trim()).filter(Boolean);
   let name=parts[0]||"";
@@ -1387,7 +1393,7 @@ const buyerKey=n=>String(n||"").toLowerCase().replace(/\(\s*pe\s*\)/g,"").replac
 const nKey=b=>buyerKey(parseBuyer(b.buyer).name||b.buyer);
 
 function collectBuyers(results){
-  const map=new Map(), unnamed={closure:0,loi:0,ioi:0}, skipped=[], included=[];
+  const map=new Map(), unnamed=zeroCats(), skipped=[], included=[];
   for(const {u,res} of results){
     if(u.buyers===false){ skipped.push({u,why:"its Buyer column is used for Transaction Type"}); continue; }
     if(res.status!=="ok"){
@@ -1398,11 +1404,11 @@ function collectBuyers(results){
     const s=normalise(res.data,u), stageOf=Object.fromEntries(u.stages.map(x=>[x.id,x]));
     for(const d of s.deals){
       const p=parseBuyer(d.buyer);
-      const sec = d.stage==="closure" ? "closure" : p.offer==="LOI" ? "loi" : p.offer==="IOI" ? "ioi" : null;
+      const sec = p.offer==="FR" ? "fundraise" : d.stage==="closure" ? "closure" : p.offer==="LOI" ? "loi" : p.offer==="IOI" ? "ioi" : null;
       if(!sec) continue;
       if(!p.name){ unnamed[sec]++; continue; }
       const key=buyerKey(p.name);
-      if(!map.has(key)) map.set(key,{name:p.name, tags:new Set(), entries:{closure:[],loi:[],ioi:[]}});
+      if(!map.has(key)) map.set(key,{name:p.name, tags:new Set(), entries:{closure:[],loi:[],ioi:[],fundraise:[]}});
       const b=map.get(key);
       if(p.tag) b.tags.add(p.tag);
       b.entries[sec].push({u, project:d.project||"Untitled", ev:d.ev, status:d.status, stage:stageOf[d.stage]});
@@ -1448,9 +1454,9 @@ function notableMessage(title,html){
 /* closures / LOIs / IOIs from the unit pipelines, one row per buyer per project */
 function liveBuyerRows(units){
   const {buyers}=collectBuyers(units), rows=[];
-  for(const b of buyers) for(const k of ["closure","loi","ioi"]) for(const e of b.entries[k])
+  for(const b of buyers) for(const k of CATS) for(const e of b.entries[k])
     rows.push({live:true, buyer:b.name, tag:[...b.tags].join(", "), category:k, project:e.project, u:e.u,
-               status:e.status||e.stage.label, ev:e.ev});
+               status:e.status||e.stage.label, ev:e.ev, closed:e.stage.id==="closure"});
   rows.forEach((r,i)=>{ r.lid=i; Object.assign(r, liveRecord(r)); });
   return rows;
 }
@@ -1465,26 +1471,28 @@ function liveRecord(r){
   const isType=TYPE_CODE.test(r.tag||"");
   const pt=splitProject(r.project);
   return {buyer:r.buyer, domain:"", type:isType?r.tag:"", category:r.category, project:pt.project, target:pt.target,
-          yearClosed:r.category==="closure"?"2026":"", yearLaunched:"", buyerLead:"", mandateLead:"", office:"", handledBy:"",
+          yearClosed:(r.category==="closure"||r.closed)?"2026":"", yearLaunched:"", buyerLead:"", mandateLead:"", office:"", handledBy:"",
           notes:[`${r.u.label} pipeline`, !isType&&r.tag?`with ${r.tag}`:"", r.status, r.ev].filter(Boolean).join(" · ")};
 }
+const rowKey=b=>nKey(b)+"|"+(b.project||"").toLowerCase().trim()+"|"+b.category;
 function adoptLive(lid){
   const r=notableLive.find(x=>x.lid===lid); if(!r) return null;
   const rec=Object.fromEntries(NB_FIELDS.map(f=>[f,r[f]??""]));
   rec.id="b"+Date.now().toString(36)+lid; rec.category=r.category;
+  rec.srcKey=rowKey(r);                                   /* which pipeline deal it came from */
   S.buyers.push(rec);
   return rec;
 }
-const CAT_LABEL={closure:"Deal Closure", loi:"LOI", ioi:"IOI"};
-const CAT_COLOR={closure:"var(--s-closure)", loi:"var(--s-live)", ioi:"var(--s-book)"};
+const CAT_LABEL={closure:"Deal Closure", loi:"LOI", ioi:"IOI", fundraise:"Fund Raise"};
+const CAT_COLOR={closure:"var(--s-closure)", loi:"var(--s-live)", ioi:"var(--s-book)", fundraise:"var(--s-fundraise)"};
 const cell=(table,id,f,val,ph,cls="")=>`<td class="${cls}" ${ED()} data-ntable="${table}" data-nid="${id}" data-nf="${f}" data-ph="${esc(ph)}">${esc(val)}</td>`;
 
 function notableRows(){
-  const rk=b=>nKey(b)+"|"+(b.project||"").toLowerCase().trim()+"|"+b.category;
+  const rk=rowKey;
   const liveByKey=new Map(notableLive.map(r=>[rk(r),r]));
   /* edited pipeline rows keep their link: "link" is the unit whose deal they came from */
-  const saved=S.buyers.map(b=>{ const l=liveByKey.get(rk(b)); return Object.assign({live:false, link:l?l.u:null}, b); });
-  const savedKeys=new Set(saved.map(rk));
+  const saved=S.buyers.map(b=>{ const l=liveByKey.get(b.srcKey||rk(b)) || liveByKey.get(rk(b)); return Object.assign({live:false, link:l?l.u:null}, b); });
+  const savedKeys=new Set(saved.flatMap(b=>[rk(b), b.srcKey].filter(Boolean)));
   return [...saved, ...notableLive.filter(r=>!savedKeys.has(rk(r)))];
 }
 const nnorm=x=>String(x||"").trim().toLowerCase();
@@ -1526,7 +1534,7 @@ function renderNotable(){
       <option value="">${esc(label)}</option>${opts.map(([val,txt])=>`<option value="${esc(val)}" ${nf[k]===val?"selected":""}>${esc(txt)}</option>`).join("")}
       ${nf[k]&&!opts.some(([val])=>val===nf[k])?`<option value="${esc(nf[k])}" selected>${esc(nf[k])}</option>`:""}</select>`;
   $("#nselects").innerHTML=
-    sel("cat","All sections",[["closure","Deal Closure"],["loi","LOI"],["ioi","IOI"]])+
+    sel("cat","All sections",CATS.map(c=>[c,CAT_LABEL[c]]))+
     sel("type","All types",nfOptions(all,"type"))+
     sel("year","Any year closed",nfOptions(all,"yearClosed",true))+
     sel("blead","Any buyer lead",nfOptions(all,"buyerLead"))+
@@ -1572,18 +1580,18 @@ function clientsTable(){
 function buyersTables(all,shown){
   shown=shown||all;
   const byKey={};
-  all.forEach(b=>{ if(!b.buyer) return; const k=nKey(b); (byKey[k]=byKey[k]||{closure:0,loi:0,ioi:0})[b.category]++; });
+  all.forEach(b=>{ if(!b.buyer) return; const k=nKey(b); (byKey[k]=byKey[k]||zeroCats())[b.category]++; });
   const yr=x=>/^\d{4}$/.test(x||"")?+x:0;
-  return ["closure","loi","ioi"].filter(cat=>!nfActive() || shown.some(b=>b.category===cat)).map(cat=>{
+  return CATS.filter(cat=>!nfActive() || shown.some(b=>b.category===cat)).map(cat=>{
     const list=shown.filter(b=>b.category===cat).sort((a,b)=>
       (a.buyer?0:-1)-(b.buyer?0:-1) || nKey(a).localeCompare(nKey(b)) || yr(b.yearClosed)-yr(a.yearClosed));
     let prev=null;
     const rows=list.map(b=>{
       const k=nKey(b), first=k!==prev; prev=k;
-      const counts=byKey[k]||{closure:0,loi:0,ioi:0};
+      const counts=byKey[k]||zeroCats();
       const badges=first&&b.buyer ? [
         counts[cat]>1?`<span class="ncount">${counts[cat]} projects</span>`:"",
-        ...["closure","loi","ioi"].filter(o=>o!==cat&&counts[o]).map(o=>`<span class="also" style="--c:${CAT_COLOR[o]}">also ${CAT_LABEL[o]} ×${counts[o]}</span>`)
+        ...CATS.filter(o=>o!==cat&&counts[o]).map(o=>`<span class="also" style="--c:${CAT_COLOR[o]}">also ${CAT_LABEL[o]} ×${counts[o]}</span>`)
       ].join("") : "";
       const id=b.live ? "live:"+b.lid : b.id;
       const c=(f,ph,cls="")=>`<td class="${cls}" ${ED()} data-ntable="buyers" data-nid="${id}" data-nf="${f}" data-ph="${esc(ph)}">${esc(b[f])}</td>`;
@@ -1596,7 +1604,7 @@ function buyersTables(all,shown){
           ${c("type","PE / SB")}
           <td>${RO()?`<span class="nsec" style="--c:${CAT_COLOR[cat]}">${CAT_LABEL[cat]}</span>`
             :`<select class="nsec" data-ntable="buyers" data-nid="${id}" data-nf="category" style="--c:${CAT_COLOR[cat]}" aria-label="Move to section" title="Move to another section">
-               ${["closure","loi","ioi"].map(o=>`<option value="${o}" ${o===cat?"selected":""}>${CAT_LABEL[o]}</option>`).join("")}</select>`}</td>
+               ${CATS.map(o=>`<option value="${o}" ${o===cat?"selected":""}>${CAT_LABEL[o]}</option>`).join("")}</select>`}</td>
           ${c("project","Project","nstrong")}
           ${c("target","Target")}
           ${c("yearClosed","Year","nyear")}
@@ -1618,7 +1626,7 @@ function buyersTables(all,shown){
         <tbody>${rows}</tbody></table></div>`
         :`<p class="bempty">No ${CAT_LABEL[cat]} buyers yet.</p>`}
     </section>`;
-  }).join("")+`<p class="sum-note">Rows marked <b>2026 Deals</b> come from the unit pages (Buyer column starting “LOI -” or “IOI -”, or a deal at Closure). Editing one here adds it to the notable list without changing the unit's deal; the tag links back to the unit. India's Transaction Type column isn't read as buyers.</p>`;
+  }).join("")+`<p class="sum-note">Rows marked <b>2026 Deals</b> come from the unit pages (Buyer column starting “LOI -”, “IOI -” or “FR -” for a fund raise, or a deal at Closure). Editing one here adds it to the notable list without changing the unit's deal; the tag links back to the unit. India's Transaction Type column isn't read as buyers.</p>`;
 }
 
 /* =====================================================================
