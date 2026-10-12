@@ -425,6 +425,9 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .nbuyers{table-layout:fixed;width:100%;min-width:1188px}
 .nbuyers th,.nbuyers td{padding-left:10px;padding-right:10px}
 .nbuyers td{vertical-align:middle}
+/* zebra stripes — every other row a faint grey; hover a touch darker so you can track the row you're on */
+.nbuyers tbody tr:nth-child(even) td{background:#F6F8FA}
+.nbuyers tbody tr:hover td{background:#EDF1F5}
 .nbuyers th:first-child,.nbuyers td:first-child{padding-left:18px}
 /* frozen headers: the section name and its column titles stay at the top while you scroll that section.
    Needs the table to sit directly in the page, so the sideways-scroll box is only used on narrow screens. */
@@ -450,7 +453,7 @@ select.nsec{cursor:pointer;appearance:auto;-webkit-appearance:auto;padding:2px 2
   border:0;border-radius:2px;padding:3px 5px;color:#fff;cursor:pointer;appearance:none;-webkit-appearance:none}
 .ntable tr.nrepeat td{border-top-color:transparent}
 .ntable tr.nrepeat .nbname{color:var(--muted);font-weight:400}
-.ntable tr.nlive td{background:#FAFBFC}
+
 .ntable a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
 .ntable a.livepill{color:var(--s-book);text-decoration:none}
 .ntable a.livepill:hover{background:var(--s-book);color:#fff}
