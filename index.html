@@ -1414,7 +1414,7 @@ function collectBuyers(results){
 /* =====================================================================
    NOTABLE CLIENTS & BUYERS
    Clients and Buyers are editable records saved to notable-clients-buyers.json.
-   Buyers also shows, read-only, the closures / LOIs / IOIs in the 2026 pipeline.
+   Buyers also shows the closures / LOIs / IOIs from the 2026 Deals in each unit.
    ===================================================================== */
 /* Notable Clients is hidden for now; its data stays in the file and is saved untouched */
 let notableLive=[];
@@ -1531,7 +1531,7 @@ function renderNotable(){
     sel("year","Any year closed",nfOptions(all,"yearClosed",true))+
     sel("blead","Any buyer lead",nfOptions(all,"buyerLead"))+
     sel("mlead","Any mandate lead",nfOptions(all,"mandateLead"))+
-    sel("src","All sources",[["live","2026 pipeline"],["list","Historic list"]]);
+    sel("src","All sources",[["live","2026 Deals"],["list","Historic list"]]);
   renderNotableBody(all);
   setSyncBar();
 }
@@ -1590,8 +1590,8 @@ function buyersTables(all,shown){
       return `<tr ${b.live?"":`data-nrow="${b.id}"`} class="${b.live?"nlive":""}${first?"":" nrepeat"}">
           <td class="nb"><div class="nbname" ${ED()} data-ntable="buyers" data-nid="${id}" data-nf="buyer" data-ph="Buyer">${esc(b.buyer)}</div>
             <div class="nbdom" ${ED()} data-ntable="buyers" data-nid="${id}" data-nf="domain" data-ph="domain.com">${esc(b.domain)}</div>
-            ${b.live?`<a class="livepill" href="#${b.u.id}" title="From the ${esc(b.u.label)} pipeline — editing here adds it to the notable list">2026 pipeline · ${esc(b.u.label)}</a>`
-              :b.link?`<a class="livepill" href="#${b.link.id}" title="Linked to a deal in the ${esc(b.link.label)} pipeline">2026 pipeline · ${esc(b.link.label)}</a>`:""}
+            ${b.live?`<a class="livepill" href="#${b.u.id}" title="From the ${esc(b.u.label)} pipeline — editing here adds it to the notable list">2026 Deals · ${esc(b.u.label)}</a>`
+              :b.link?`<a class="livepill" href="#${b.link.id}" title="Linked to a deal in the ${esc(b.link.label)} pipeline">2026 Deals · ${esc(b.link.label)}</a>`:""}
             ${badges?`<div class="alsos">${badges}</div>`:""}</td>
           ${c("type","PE / SB")}
           <td>${RO()?`<span class="nsec" style="--c:${CAT_COLOR[cat]}">${CAT_LABEL[cat]}</span>`
@@ -1618,7 +1618,7 @@ function buyersTables(all,shown){
         <tbody>${rows}</tbody></table></div>`
         :`<p class="bempty">No ${CAT_LABEL[cat]} buyers yet.</p>`}
     </section>`;
-  }).join("")+`<p class="sum-note">Rows marked <b>2026 pipeline</b> come from the unit pages (Buyer column starting “LOI -” or “IOI -”, or a deal at Closure). Editing one here adds it to the notable list without changing the unit's deal; the tag links back to the unit. India's Transaction Type column isn't read as buyers.</p>`;
+  }).join("")+`<p class="sum-note">Rows marked <b>2026 Deals</b> come from the unit pages (Buyer column starting “LOI -” or “IOI -”, or a deal at Closure). Editing one here adds it to the notable list without changing the unit's deal; the tag links back to the unit. India's Transaction Type column isn't read as buyers.</p>`;
 }
 
 /* =====================================================================
