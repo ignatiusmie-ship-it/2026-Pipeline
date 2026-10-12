@@ -1489,11 +1489,23 @@ const cell=(table,id,f,val,ph,cls="")=>`<td class="${cls}" ${ED()} data-ntable="
 
 function notableRows(){
   const rk=rowKey;
+  const pk=b=>nKey(b)+"|"+(b.project||"").toLowerCase().trim();      /* buyer + project, ignoring section */
+  /* a closed deal supersedes its offer: an LOI/IOI record whose deal has since closed moves to Deal Closure,
+     keeping everything that was added to it. Saved with the next edit. */
+  const savedClosed=new Set(S.buyers.filter(b=>b.category==="closure").map(pk));
+  notableLive.filter(r=>r.category==="closure").forEach(r=>{
+    if(savedClosed.has(pk(r))) return;
+    const offer=S.buyers.find(b=>(b.category==="loi"||b.category==="ioi") && pk(b)===pk(r));
+    if(offer){ offer.category="closure"; offer.srcKey=rk(r); savedClosed.add(pk(r)); }
+  });
   const liveByKey=new Map(notableLive.map(r=>[rk(r),r]));
   /* edited pipeline rows keep their link: "link" is the unit whose deal they came from */
   const saved=S.buyers.map(b=>{ const l=liveByKey.get(b.srcKey||rk(b)) || liveByKey.get(rk(b)); return Object.assign({live:false, link:l?l.u:null}, b); });
   const savedKeys=new Set(saved.flatMap(b=>[rk(b), b.srcKey].filter(Boolean)));
-  return [...saved, ...notableLive.filter(r=>!savedKeys.has(rk(r)))];
+  const rows=[...saved, ...notableLive.filter(r=>!savedKeys.has(rk(r)))];
+  /* once a buyer's deal is closed it shows only under Deal Closure */
+  const closed=new Set(rows.filter(b=>b.category==="closure").map(pk));
+  return rows.filter(b=>!((b.category==="loi"||b.category==="ioi") && closed.has(pk(b))));
 }
 const nnorm=x=>String(x||"").trim().toLowerCase();
 const NF_FIELD={type:"type", blead:"buyerLead", mlead:"mandateLead", year:"yearClosed"};
