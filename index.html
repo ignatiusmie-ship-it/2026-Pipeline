@@ -1595,8 +1595,12 @@ function buyersTables(all,shown){
   all.forEach(b=>{ if(!b.buyer) return; const k=nKey(b); (byKey[k]=byKey[k]||zeroCats())[b.category]++; });
   const yr=x=>/^\d{4}$/.test(x||"")?+x:0;
   return CATS.filter(cat=>!nfActive() || shown.some(b=>b.category===cat)).map(cat=>{
+    /* Deal Closure runs newest year first (no year at the end); other sections stay A–Z by buyer.
+       A row just added always sits at the top while you fill it in. */
     const list=shown.filter(b=>b.category===cat).sort((a,b)=>
-      (a.buyer?0:-1)-(b.buyer?0:-1) || nKey(a).localeCompare(nKey(b)) || yr(b.yearClosed)-yr(a.yearClosed));
+      (a.buyer?0:-1)-(b.buyer?0:-1) ||
+      (cat==="closure" ? yr(b.yearClosed)-yr(a.yearClosed) : 0) ||
+      nKey(a).localeCompare(nKey(b)) || yr(b.yearClosed)-yr(a.yearClosed));
     let prev=null;
     const rows=list.map(b=>{
       const k=nKey(b), first=k!==prev; prev=k;
