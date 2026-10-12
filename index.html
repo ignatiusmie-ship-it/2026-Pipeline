@@ -408,6 +408,7 @@ tr.drop-before td{box-shadow:inset 0 2px 0 var(--signal)}
 .ntabs button.on{background:var(--ink);color:#fff}
 .ntabs button.on span{color:#A9B6C9}
 #nlinkbar{margin-bottom:16px}
+.nacts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .nfilters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1}
 #nselects{display:contents}
 .nfilters input[type=search]{font-family:inherit;font-size:12.5px;padding:7px 10px;width:240px;border:1px solid var(--rule);
@@ -447,6 +448,7 @@ select.nsec{cursor:pointer;appearance:auto;-webkit-appearance:auto;padding:2px 2
 .ntable .nbname{font-size:14px}
 .ntable .nbdom{font-size:11.5px;color:var(--muted);margin-top:2px}
 .ntable td.nyear{white-space:nowrap;font-variant-numeric:tabular-nums}
+.ntable td.nval{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
 .ntable td.nlead{font-weight:700;color:var(--ink-2)}
 .ntable td.nnote{color:var(--ink-2);max-width:260px}
 .ntable td.nb{width:220px}
@@ -1030,7 +1032,7 @@ function blankState(u){
           eaOrder:[...u.ea], cols:Object.assign({},COL_DEFAULTS,u.cols||{})};
 }
 /* accepts files saved by any earlier version of the dashboards */
-const NB_FIELDS=["buyer","domain","type","category","project","target","yearClosed","yearLaunched","buyerLead","mandateLead","office","handledBy","notes"];
+const NB_FIELDS=["buyer","domain","type","category","project","target","dealValue","yearClosed","yearLaunched","buyerLead","mandateLead","office","handledBy","notes"];
 const NC_FIELDS=["project","company","yearLaunched","status","mandateLead","type","focus","office","handledBy"];
 function normaliseNotable(d){
   const src=(d&&typeof d==="object")?d:{};
@@ -1474,9 +1476,9 @@ const TYPE_CODE=/^(pe|pe port|sb|strategic|holding co\.?)$/i;
 function liveRecord(r){
   const isType=TYPE_CODE.test(r.tag||"");
   const pt=splitProject(r.project);
-  return {buyer:r.buyer, domain:"", type:isType?r.tag:"", category:r.category, project:pt.project, target:pt.target,
+  return {buyer:r.buyer, domain:"", type:isType?r.tag:"", category:r.category, project:pt.project, target:pt.target, dealValue:r.ev||"",
           yearClosed:(r.category==="closure"||r.closed)?"2026":"", yearLaunched:"", buyerLead:"", mandateLead:"", office:"", handledBy:"",
-          notes:[`${r.u.label} pipeline`, !isType&&r.tag?`with ${r.tag}`:"", r.status, r.ev].filter(Boolean).join(" · ")};
+          notes:[`${r.u.label} pipeline`, !isType&&r.tag?`with ${r.tag}`:"", r.status].filter(Boolean).join(" · ")};
 }
 const rowKey=b=>nKey(b)+"|"+(b.project||"").toLowerCase().trim()+"|"+b.category;
 function adoptLive(lid){
@@ -1504,7 +1506,10 @@ function notableRows(){
   });
   const liveByKey=new Map(notableLive.map(r=>[rk(r),r]));
   /* edited pipeline rows keep their link: "link" is the unit whose deal they came from */
-  const saved=S.buyers.map(b=>{ const l=liveByKey.get(b.srcKey||rk(b)) || liveByKey.get(rk(b)); return Object.assign({live:false, link:l?l.u:null}, b); });
+  const saved=S.buyers.map(b=>{
+    const l=liveByKey.get(b.srcKey||rk(b)) || liveByKey.get(rk(b));
+    if(l && !b.dealValue && l.ev) b.dealValue=l.ev;
+    return Object.assign({live:false, link:l?l.u:null}, b); });
   const savedKeys=new Set(saved.flatMap(b=>[rk(b), b.srcKey].filter(Boolean)));
   const rows=[...saved, ...notableLive.filter(r=>!savedKeys.has(rk(r)))];
   /* once a buyer's deal is closed it shows only under Deal Closure */
@@ -1538,7 +1543,8 @@ function renderNotable(){
           <input type="search" id="nq" placeholder="Search buyer, project, target…" aria-label="Search buyers">
           <span id="nselects"></span>
         </div>
-        <button class="primary edit-only" data-nadd="buyers">Add buyer</button>
+        <span class="nacts"><button class="edit-only" data-nimport title="Add buyers from a .json file — anything already in the list is skipped">Import buyers</button>
+        <button class="primary edit-only" data-nadd="buyers">Add buyer</button></span>
       </div>
       <div class="nfoot"><span id="nmatch"></span><button class="nclear" data-nclear hidden>Clear filters</button></div>
       <div class="linkbar" id="nlinkbar"></div>
@@ -1627,6 +1633,7 @@ function buyersTables(all,shown){
                ${CATS.map(o=>`<option value="${o}" ${o===cat?"selected":""}>${CAT_LABEL[o]}</option>`).join("")}</select>`}</td>
           ${c("project","Project","nstrong")}
           ${c("target","Target")}
+          ${c("dealValue","$M","nval")}
           ${c("yearClosed","Year","nyear")}
           ${c("yearLaunched","Year","nyear")}
           ${c("buyerLead","Lead","nlead")}
@@ -1639,9 +1646,9 @@ function buyersTables(all,shown){
     return `<section class="bsec" style="--c:${CAT_COLOR[cat]}">
       <header class="bsec-head"><h2>${CAT_LABEL[cat]}</h2><span>${n} buyer${n===1?"":"s"} · ${list.length} project${list.length===1?"":"s"}</span></header>
       ${list.length?`<div class="nscroll"><table class="btable ntable nbuyers">
-        <colgroup><col style="width:190px"><col style="width:64px"><col style="width:112px"><col style="width:128px"><col style="width:132px">
-          <col style="width:66px"><col style="width:86px"><col style="width:92px"><col style="width:110px"><col style="width:174px"><col style="width:34px"></colgroup>
-        <thead><tr><th>Buyer</th><th>Type</th><th>Section</th><th>Project</th><th>Target</th><th>Closed</th><th>Launched</th>
+        <colgroup><col style="width:178px"><col style="width:58px"><col style="width:106px"><col style="width:116px"><col style="width:124px"><col style="width:76px">
+          <col style="width:64px"><col style="width:84px"><col style="width:88px"><col style="width:104px"><col style="width:156px"><col style="width:34px"></colgroup>
+        <thead><tr><th>Buyer</th><th>Type</th><th>Section</th><th>Project</th><th>Target</th><th>Deal value</th><th>Closed</th><th>Launched</th>
           <th>Buyer lead</th><th>Mandate lead</th><th>Notes</th><th></th></tr></thead>
         <tbody>${rows}</tbody></table></div>`
         :`<p class="bempty">No ${CAT_LABEL[cat]} buyers yet.</p>`}
@@ -1791,7 +1798,7 @@ function wireOnce(){
 
   document.addEventListener("click",async e=>{
     if(e.target.isContentEditable) return;
-    const t=e.target.closest("[data-act],[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort],[data-filter],[data-ntab],[data-nadd],[data-ndel],[data-nclear]");
+    const t=e.target.closest("[data-act],[data-open],[data-del],[data-eaadd],[data-eadel],th[data-sort],[data-filter],[data-ntab],[data-nadd],[data-ndel],[data-nclear],[data-nimport]");
     if(!t) return;
     const act=t.dataset.act;
     if(act==="reload"){ location.reload(); return; }
@@ -1806,6 +1813,7 @@ function wireOnce(){
     if(t.dataset.filter){ stageFilter=stageFilter===t.dataset.filter?null:t.dataset.filter; render(); return; }
     if(t.dataset.sort){ if(sortBy===t.dataset.sort) sortDir*=-1; else { sortBy=t.dataset.sort; sortDir=1; } renderTable(); return; }
     if(RO()) return;
+    if(t.dataset.nimport!==undefined){ importBuyers(); return; }
     if(t.dataset.nadd){
       const k=t.dataset.nadd, id=(k==="clients"?"c":"b")+Date.now().toString(36);
       const row=Object.fromEntries((k==="clients"?NC_FIELDS:NB_FIELDS).map(f=>[f,""])); row.id=id;
@@ -1969,6 +1977,45 @@ async function downloadPDF(){
   }finally{
     btn.disabled=false; btn.innerHTML=label; pdfBusy=false;
   }
+}
+
+/* merge buyers from a file into the list; never overwrites, skips anything already present */
+const importKey=b=>nKey(b)+"|"+buyerKey(b.target||b.project||"");
+function importBuyers(){
+  if(!S||!U||U.kind!=="notable"||RO()) return;
+  const i=document.createElement("input"); i.type="file"; i.accept="application/json,.json";
+  i.onchange=()=>{
+    const f=i.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{
+      let p; try{ p=JSON.parse(r.result); }catch(e){ p=null; }
+      const raw=p&&Array.isArray(p.buyers)?p.buyers.filter(x=>x&&typeof x==="object"):[];
+      if(!raw.length){ alert("That file has no buyers in it. Choose a notable-buyers .json file."); return; }
+      const have=new Map(S.buyers.map(x=>[importKey(x),x])), ids=new Set(S.buyers.map(x=>x.id));
+      const fresh=[], fills=[]; let complete=0, notFound=0;
+      raw.forEach(x=>{
+        const rec=normaliseNotable({buyers:[x]}).buyers[0]; if(!rec||!rec.buyer) return;
+        const k=importKey(rec), ex=have.get(k);
+        if(ex){
+          const blanks=NB_FIELDS.filter(fl=>fl!=="category" && rec[fl] && !ex[fl] && (x[fl]!=null));
+          if(blanks.length) fills.push([ex,rec,blanks]); else complete++;
+        }else if(x.fillOnly){ notFound++; }
+        else { have.set(k,rec); fresh.push(rec); }
+      });
+      if(!fresh.length && !fills.length){ toast(`Nothing new in ${f.name} — everything is already in the list.`); return; }
+      const msg=[fresh.length?`add ${fresh.length} new buyer record${fresh.length===1?"":"s"}`:"",
+                 fills.length?`fill empty cells on ${fills.length} existing record${fills.length===1?"":"s"}`:""].filter(Boolean).join(" and ");
+      if(!confirm(`From ${f.name}: ${msg}?\n\nNothing you've already entered will be changed.`)) return;
+      fills.forEach(([ex,rec,blanks])=>blanks.forEach(fl=>ex[fl]=rec[fl]));
+      fresh.forEach(x=>{ if(ids.has(x.id)) x.id="b"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); ids.add(x.id); S.buyers.push(x); });
+      save(); render();
+      toast([fresh.length?`Added ${fresh.length} buyer${fresh.length===1?"":"s"}`:"",
+             fills.length?`filled ${fills.length} record${fills.length===1?"":"s"}`:"",
+             complete?`${complete} already complete`:"", notFound?`${notFound} not found`:""].filter(Boolean).join(" · ")+".");
+    };
+    r.readAsText(f);
+  };
+  i.click();
 }
 
 async function useCandidate(itemId){
