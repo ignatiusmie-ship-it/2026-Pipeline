@@ -632,7 +632,7 @@ const UNITS = [
 ];
 const UNIT_BY_ID = Object.fromEntries(UNITS.map(u=>[u.id,u]));
 /* Notable Buyers sections, in display order */
-const CATS=["closure","loi","ioi","fundraise"];
+const CATS=["closure","fundraise","loi","ioi"];
 const zeroCats=()=>({closure:0,loi:0,ioi:0,fundraise:0});
 /* Notable Clients & Buyers: one file in the Documents library root, editable by site members */
 const NOTABLE = {id:"notable", kind:"notable", label:"The notable list", folder:"", file:"notable-clients-buyers.json", stages:[], ea:[]};
@@ -1499,8 +1499,8 @@ const nnorm=x=>String(x||"").trim().toLowerCase();
 const NF_FIELD={type:"type", blead:"buyerLead", mlead:"mandateLead", year:"yearClosed"};
 function nfActive(){ return Object.keys(NF_EMPTY).some(k=>nf[k]); }
 function matchesNF(b){
+  if(nf.cat && (nf.cat==="offers" ? !["loi","ioi"].includes(b.category) : b.category!==nf.cat)) return false;
   if(!b.live && !b.buyer && !b.project) return true;            /* a row just added stays visible while you fill it in */
-  if(nf.cat && b.category!==nf.cat) return false;
   if(nf.src && (nf.src==="live")!==!!(b.live||b.link)) return false;
   for(const k of ["type","blead","mlead","year"]) if(nf[k] && nnorm(b[NF_FIELD[k]])!==nf[k]) return false;
   if(nf.q){ const q=nnorm(nf.q); if(![b.buyer,b.project,b.target,b.domain].some(x=>nnorm(x).includes(q))) return false; }
@@ -1534,7 +1534,7 @@ function renderNotable(){
       <option value="">${esc(label)}</option>${opts.map(([val,txt])=>`<option value="${esc(val)}" ${nf[k]===val?"selected":""}>${esc(txt)}</option>`).join("")}
       ${nf[k]&&!opts.some(([val])=>val===nf[k])?`<option value="${esc(nf[k])}" selected>${esc(nf[k])}</option>`:""}</select>`;
   $("#nselects").innerHTML=
-    sel("cat","All sections",CATS.map(c=>[c,CAT_LABEL[c]]))+
+    sel("cat","All sections",[["closure","Deal Closure"],["fundraise","Fund Raise"],["offers","LOI & IOI"],["loi","LOI"],["ioi","IOI"]])+
     sel("type","All types",nfOptions(all,"type"))+
     sel("year","Any year closed",nfOptions(all,"yearClosed",true))+
     sel("blead","Any buyer lead",nfOptions(all,"buyerLead"))+
@@ -1789,7 +1789,7 @@ function wireOnce(){
     if(t.dataset.nadd){
       const k=t.dataset.nadd, id=(k==="clients"?"c":"b")+Date.now().toString(36);
       const row=Object.fromEntries((k==="clients"?NC_FIELDS:NB_FIELDS).map(f=>[f,""])); row.id=id;
-      if(k==="buyers") row.category=nf.cat||"closure";
+      if(k==="buyers") row.category = nf.cat==="offers" ? "loi" : (nf.cat||"closure");
       S[k].unshift(row); render();
       const first=document.querySelector(`[data-nid="${id}"][data-nf="${k==="clients"?"project":"buyer"}"]`); if(first) first.focus();
       return;
