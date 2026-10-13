@@ -1942,7 +1942,9 @@ function wireOnce(){
    jsPDF + its table plugin load on first click only.
    ===================================================================== */
 const JSPDF_URL="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js";
-const AUTOTABLE_URL="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js";
+/* Lato TTFs from Google Fonts, pinned to one commit so they can never change underneath us */
+const LATO_BASE="https://cdn.jsdelivr.net/gh/google/fonts@66928797f271fed5ee428544e7229685e2d90127/ofl/lato/";
+const LATO_FILES={regular:"Lato-Regular.ttf", bold:"Lato-Bold.ttf", black:"Lato-Black.ttf"};
 function loadScript(src){
   return new Promise((res,rej)=>{
     const el=document.createElement("script"); el.src=src; el.crossOrigin="anonymous";
@@ -1950,97 +1952,124 @@ function loadScript(src){
     document.head.appendChild(el);
   });
 }
-const PDF_NAVY=[15,27,46], PDF_RED=[210,38,48], PDF_MUTED=[107,122,145], PDF_RULE=[210,216,225], PDF_STRIPE=[236,239,244];
+let latoCache=null;
+async function loadLato(){
+  if(latoCache) return latoCache;
+  const out={};
+  for(const [k,file] of Object.entries(LATO_FILES)){
+    const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),NET_TIMEOUT);
+    try{
+      const r=await fetch(LATO_BASE+file,{signal:ctl.signal}); if(!r.ok) throw new Error("font "+r.status);
+      const bytes=new Uint8Array(await r.arrayBuffer()); let bin="";
+      for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
+      out[k]=btoa(bin);
+    }finally{ clearTimeout(t); }
+  }
+  return (latoCache=out);
+}
+
+const PDF_C={navy:[15,27,46],red:[210,38,48],canvas:[231,234,239],surface:[255,255,255],rule:[210,216,225],ruleSoft:[229,233,239],
+  ink:[15,27,46],ink2:[51,67,92],muted:[107,122,145],mast:[169,182,201],won:[18,153,75],lost:[210,38,48]};
 const PDF_STAGE={closure:[18,153,75],mandated:[110,122,140],dd:[227,164,0],live:[107,47,160],book:[14,116,144],passive:[154,167,184],terminated:[55,65,81]};
+const PDF_EA={won:[18,153,75],sent:[110,122,140],nda:[227,164,0],yet:[154,167,184],lost:[210,38,48]};
 const pdfDate=iso=>iso?new Date(iso).toLocaleDateString([], {day:"numeric",month:"short",year:"numeric"}):"";
 
-function buildSummaryPDF(results){
+/* draws the All Business Units page — same layout as the screen, all text real */
+function buildSummaryPDF(results,fonts){
   const doc=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
-  const pw=doc.internal.pageSize.getWidth(), ph=doc.internal.pageSize.getHeight(), m=12;
+  const pw=doc.internal.pageSize.getWidth(), ph=doc.internal.pageSize.getHeight(), m=10;
+  if(fonts){
+    doc.addFileToVFS("Lato-Regular.ttf",fonts.regular); doc.addFont("Lato-Regular.ttf","Lato","normal");
+    doc.addFileToVFS("Lato-Bold.ttf",fonts.bold);       doc.addFont("Lato-Bold.ttf","Lato","bold");
+    doc.addFileToVFS("Lato-Black.ttf",fonts.black);     doc.addFont("Lato-Black.ttf","LatoBlack","normal");
+  }
+  const F=(w,size,col)=>{
+    if(fonts) doc.setFont(w==="black"?"LatoBlack":"Lato", w==="black"?"normal":w);
+    else doc.setFont("helvetica", w==="normal"?"normal":"bold");
+    doc.setFontSize(size); doc.setTextColor(...col);
+  };
+  const T=(str,x,y,opt)=>{ doc.text(String(str),x,y,opt||{}); };
+  const caps=(str,x,y,cs,opt)=>{ doc.setCharSpace(cs); T(str,x,y,opt); doc.setCharSpace(0); };
+  const capsW=(str,cs)=>doc.getTextWidth(str)+cs*(str.length-1);
+  const box=(x,y,w,h,fill,stroke)=>{ doc.setFillColor(...fill); if(stroke){ doc.setDrawColor(...stroke); doc.setLineWidth(0.25); doc.rect(x,y,w,h,"FD"); } else doc.rect(x,y,w,h,"F"); };
   const now=new Date(), who=(account&&account.name)||"";
   const stamp=now.toLocaleString([], {day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"});
 
   /* same figures as the page */
-  const T={closures:0,active:0,fy:0,mandated:0,ev:0,closed:0,won:0}, rows=[];
-  results.forEach(({u,res})=>{
-    if(res.status==="ok"){
-      const st=unitStats(u,normalise(res.data,u));
-      T.closures+=st.closures; T.active+=st.active; T.fy+=st.fy; T.mandated+=st.mandated; T.ev+=st.ev; T.closed+=st.closed;
-      T.won+=(st.ea.find(e=>e.k==="won")||{n:0}).n;
-      rows.push({u,st,meta:res.meta});
-    } else rows.push({u,why: res.status==="missing"?"Nothing saved yet": res.status==="noaccess"?"No access":"Couldn't load"});
+  const Tt={closures:0,active:0,fy:0,mandated:0,ev:0,closed:0,won:0}; let reporting=0;
+  const cards=results.map(({u,res})=>{
+    if(res.status!=="ok") return {u,why: res.status==="missing"?`Nothing saved yet.`: res.status==="noaccess"?"No access to this unit.":"Couldn't load this unit."};
+    const st=unitStats(u,normalise(res.data,u)); reporting++;
+    Tt.closures+=st.closures; Tt.active+=st.active; Tt.fy+=st.fy; Tt.mandated+=st.mandated; Tt.ev+=st.ev; Tt.closed+=st.closed;
+    Tt.won+=(st.ea.find(e=>e.k==="won")||{n:0}).n;
+    return {u,st,meta:res.meta};
   });
-  const okRows=rows.filter(r=>r.st);
 
-  /* header band */
-  doc.setFillColor(...PDF_NAVY); doc.rect(0,0,pw,20,"F");
-  doc.setFillColor(...PDF_RED); doc.rect(0,20,pw,1.2,"F");
-  doc.setFont("helvetica","bold"); doc.setFontSize(22); doc.setTextColor(255,255,255);
-  doc.text("S&L",m,13.5);
-  doc.setTextColor(...PDF_RED); doc.text("Pipeline",m+doc.getTextWidth("S&L "),13.5);
-  doc.setFontSize(9); doc.setTextColor(201,211,225); doc.text("ALL BUSINESS UNITS",pw-m,9,{align:"right"});
-  doc.setFont("helvetica","normal"); doc.text(stamp+(who?"  ·  "+who:""),pw-m,14.5,{align:"right"});
+  /* page + masthead */
+  box(0,0,pw,ph,PDF_C.canvas);
+  box(0,0,pw,25,PDF_C.navy); box(0,25,pw,1.5,PDF_C.red);
+  F("black",6.6,[255,255,255]); const bt="ALL BUSINESS UNITS", bw=capsW(bt,0.55)+6;
+  box(m,5.2,bw,5.2,PDF_C.red); caps(bt,m+3,8.9,0.55);
+  F("black",23,[255,255,255]); T("S&L",m,20.5);
+  doc.setTextColor(...PDF_C.red); T("Pipeline",m+doc.getTextWidth("S&L "),20.5);
+  F("normal",8,PDF_C.mast); T(stamp+(who?"  ·  "+who:""),pw-m,20.5,{align:"right"});
 
-  const base={theme:"grid", margin:{left:m,right:m,bottom:16},
-    styles:{font:"helvetica",fontSize:9.5,cellPadding:{top:1.35,bottom:1.35,left:2.6,right:2.6},textColor:PDF_NAVY,lineColor:PDF_RULE,lineWidth:0.15,valign:"middle"},
-    headStyles:{fillColor:PDF_NAVY,textColor:255,fontStyle:"bold",fontSize:8},
-    alternateRowStyles:{fillColor:PDF_STRIPE}};
-  let y=29;
-  const heading=t=>{ if(y>ph-48){ doc.addPage(); y=20; }
-    doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...PDF_NAVY); doc.text(t.toUpperCase(),m,y); y+=3; };
-  const after=()=>{ y=doc.lastAutoTable.finalY+7; };
+  /* tiles */
+  const tiles=[[Tt.mandated,"SIGNED MANDATES"],[Tt.closures,"DEAL CLOSURES"],[money(Tt.closed),"CLOSED EV"],[Tt.fy,"FY 2026 CLOSURES"],
+               [Tt.active,"ACTIVE IN MARKET"],[money(Tt.ev),"TRACKED EV"],[Tt.won,"EAs WON"]];
+  const ty=32, th=21, gap=0.6, tw=(pw-2*m-gap*(tiles.length-1))/tiles.length;
+  box(m-0.25,ty-0.25,pw-2*m+0.5,th+0.5,PDF_C.rule);
+  tiles.forEach(([v,l],i)=>{ const x=m+i*(tw+gap); box(x,ty,tw,th,PDF_C.surface);
+    F("black",18,PDF_C.ink); T(v,x+5,ty+10.5);
+    F("bold",6.4,PDF_C.muted); caps(l,x+5,ty+16.5,0.45); });
 
-  heading("Headline figures");
-  doc.autoTable({...base, startY:y,
-    head:[["Signed mandates","Deal Closures","Closed EV","FY 2026 Closures","Active in market","Tracked EV","EAs won"]],
-    body:[[T.mandated,T.closures,money(T.closed),T.fy,T.active,money(T.ev),T.won]],
-    bodyStyles:{fontSize:15,fontStyle:"bold",cellPadding:{top:2.2,bottom:2.2,left:3,right:3}}});
-  after();
+  /* unit cards, 2 × 2 */
+  const cy=ty+th+6, cg=6, cw=(pw-2*m-cg)/2, ch=63;
+  cards.forEach((c,i)=>{
+    const x=m+(i%2)*(cw+cg), y=cy+Math.floor(i/2)*(ch+cg);
+    box(x,y,cw,ch,PDF_C.surface,PDF_C.rule);
+    F("black",7.4,[255,255,255]); const lb=c.u.label.toUpperCase(), lw=capsW(lb,0.8)+7;
+    box(x+6,y+5,lw,6,PDF_C.red); caps(lb,x+9.5,y+9.2,0.8);
+    if(c.meta){ const by=(c.meta.lastModifiedBy&&c.meta.lastModifiedBy.user&&c.meta.lastModifiedBy.user.displayName)||"";
+      F("normal",8.2,PDF_C.muted); T(`Updated${by?" by "+by:""} · ${pdfDate(c.meta.lastModifiedDateTime)}`,x+cw-6,y+9.4,{align:"right"}); }
+    doc.setDrawColor(...PDF_C.ruleSoft); doc.setLineWidth(0.25); doc.line(x,y+15,x+cw,y+15);
+    if(!c.st){ F("normal",9,PDF_C.muted); T(c.why,x+6,y+25); return; }
+    const st=c.st, cur=c.u.currency||"$";
+    [[st.closures,"DEAL CLOSURES"],[st.mandated,"MANDATED"],[money(st.ev,cur),"TRACKED EV"],[money(st.closed,cur),"CLOSED EV"]].forEach(([v,l],k)=>{
+      const nx=x+6+k*((cw-12)/4); F("black",15.5,PDF_C.ink); T(v,nx,y+26.5); F("bold",6.2,PDF_C.muted); caps(l,nx,y+31.6,0.45); });
+    /* stage bar */
+    const bx=x+6, bw2=cw-12, by=y+36, segs=st.stageCounts.filter(s=>s.st.id!=="mandated"&&s.n>0), tot=segs.reduce((a,s)=>a+s.n,0);
+    box(bx,by,bw2,1.9,PDF_C.ruleSoft); let sx=bx;
+    segs.forEach(s=>{ const w=bw2*s.n/tot; box(sx,by,w,1.9,PDF_STAGE[s.st.id]||PDF_C.muted); sx+=w; });
+    /* legend */
+    let lx=bx, ly=y+44;
+    st.stageCounts.filter(s=>s.st.id!=="mandated").forEach(s=>{
+      const lab=s.st.label+" ";
+      F("normal",8.4,PDF_C.ink2); const labW=doc.getTextWidth(lab);
+      F("black",8.4,PDF_C.ink);   const nw=doc.getTextWidth(String(s.n));
+      const need=2.6+labW+nw+4.5;
+      if(lx+need>bx+bw2){ lx=bx; ly+=5; }
+      doc.setFillColor(...(PDF_STAGE[s.st.id]||PDF_C.muted)); doc.circle(lx+1,ly-1.05,0.95,"F");
+      F("normal",8.4,PDF_C.ink2); T(lab,lx+2.6,ly);
+      F("black",8.4,PDF_C.ink);   T(s.n,lx+2.6+labW,ly);
+      lx+=need; });
+    /* EA line */
+    doc.setDrawColor(...PDF_C.ruleSoft); doc.line(x,y+50.5,x+cw,y+50.5);
+    let ex=x+6; const ey=y+57.6;
+    st.ea.forEach((e,k)=>{
+      if(k){ F("normal",8.4,PDF_C.muted); T("·",ex+1.2,ey); ex+=4.2; }
+      F("normal",8.4,PDF_C.ink2); const t=e.short+" "; T(t,ex,ey); ex+=doc.getTextWidth(t);
+      F("black",8.4,PDF_C.ink); T(e.n,ex,ey); ex+=doc.getTextWidth(String(e.n))+1;
+    });
+  });
 
-  heading("Business units");
-  doc.autoTable({...base, startY:y,
-    head:[["Business unit","Deal Closures","Mandated","Tracked EV","Closed EV","Last updated"]],
-    body:rows.map(r=>r.st
-      ? [r.u.label, r.st.closures, r.st.mandated, money(r.st.ev,r.u.currency||"$"), money(r.st.closed,r.u.currency||"$"),
-         [(r.meta.lastModifiedBy&&r.meta.lastModifiedBy.user&&r.meta.lastModifiedBy.user.displayName)||"", pdfDate(r.meta.lastModifiedDateTime)].filter(Boolean).join(" · ")]
-      : [r.u.label,{content:r.why,colSpan:5,styles:{textColor:PDF_MUTED,fontStyle:"italic"}}]),
-    columnStyles:{0:{fontStyle:"bold",cellWidth:42}}});
-  after();
-
-  /* stage mix: every stage any unit uses, Mandated shown above as a count */
-  const stageIds=[...new Set(UNITS.flatMap(u=>u.stages.map(s=>s.id)))].filter(id=>id!=="mandated");
-  const stageLabel=Object.fromEntries(UNITS.flatMap(u=>u.stages.map(s=>[s.id,s.label])));
-  heading("Stage mix — number of deals");
-  doc.autoTable({...base, startY:y,
-    head:[["Business unit",...stageIds.map(id=>stageLabel[id]),"All deals"]],
-    body:okRows.map(r=>[r.u.label,...stageIds.map(id=>{ const c=r.st.stageCounts.find(x=>x.st.id===id); return c?c.n:"—"; }),r.st.deals]),
-    columnStyles:{0:{fontStyle:"bold",cellWidth:42}},
-    didParseCell:d=>{ if(d.section==="head" && d.column.index>0 && d.column.index<=stageIds.length){
-      const c=PDF_STAGE[stageIds[d.column.index-1]]; if(c) d.cell.styles.fillColor=c; } }});
-  after();
-
-  /* engagement agreements: every section any unit uses */
-  const eaIds=["won","sent","nda","yet","lost"].filter(k=>UNITS.some(u=>u.ea.includes(k)));
-  heading("Engagement agreements - 2026");
-  doc.autoTable({...base, startY:y,
-    head:[["Business unit",...eaIds.map(k=>EA_DEF[k].short)]],
-    body:okRows.map(r=>[r.u.label,...eaIds.map(k=>{ const e=r.st.ea.find(x=>x.k===k); return e?e.n:"—"; })]),
-    columnStyles:{0:{fontStyle:"bold",cellWidth:42}}});
-  after();
-
-  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...PDF_MUTED);
-  const note=`${okRows.length} of ${UNITS.length} business units reporting. Tracked EV adds the EV entered on each deal except Passive and Terminated ones, and includes Closed EV. Ranges count their lower end. "—" means the unit doesn't use that stage or section.`;
-  doc.text(doc.splitTextToSize(note,pw-2*m),m,Math.min(y-3,ph-22));
-
-  /* footer on every page */
-  const n=doc.getNumberOfPages();
-  for(let i=1;i<=n;i++){
-    doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(...PDF_MUTED);
-    doc.setDrawColor(...PDF_RULE); doc.setLineWidth(0.2); doc.line(m,ph-11,pw-m,ph-11);
-    doc.text(`S&L Pipeline · All Business Units · ${stamp}${who?" · "+who:""}`,m,ph-7);
-    doc.text(`Page ${i} of ${n}`,pw/2,ph-7,{align:"center"});
-    doc.text("Confidential — internal use only",pw-m,ph-7,{align:"right"});
-  }
+  /* note + footer */
+  const ny=cy+2*ch+cg+5;
+  F("normal",7.2,PDF_C.muted);
+  T(`${reporting} of ${UNITS.length} business units reporting. Tracked EV adds the EV entered on each deal except Passive and Terminated ones, and includes Closed EV. Ranges count their lower end.`,m,ny);
+  F("normal",7,PDF_C.muted);
+  T(`S&L Pipeline · All Business Units · ${stamp}${who?" · "+who:""}`,m,ph-4.5);
+  T("Confidential — internal use only",pw-m,ph-4.5,{align:"right"});
   return doc;
 }
 
@@ -2053,8 +2082,8 @@ async function downloadPDF(){
     if(view!=="all"){ history.pushState(null,"","#all"); await go("all"); }
     if(!lastAll) throw new Error("the summary hasn't finished loading");
     if(!(window.jspdf && window.jspdf.jsPDF)) await loadScript(JSPDF_URL);
-    if(!window.jspdf.jsPDF.API.autoTable) await loadScript(AUTOTABLE_URL);
-    const doc=buildSummaryPDF(lastAll);
+    let fonts=null; try{ fonts=await loadLato(); }catch(e){ fonts=null; }      /* falls back to Helvetica */
+    const doc=buildSummaryPDF(lastAll,fonts);
     doc.save(`S&L Pipeline ${new Date().toISOString().slice(0,10)}.pdf`);
     toast("PDF downloaded.");
   }catch(e){
