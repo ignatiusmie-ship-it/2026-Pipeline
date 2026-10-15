@@ -1149,8 +1149,8 @@ function renderRail(){
     const items=S.deals.filter(d=>d.stage===s.id);
     let body;
     if(s.id==="mandated"){
-      body=`<div class="bulk">
-        <input id="mandCount" type="number" min="0" value="${S.mandated}" ${RO()?"readonly":""} aria-label="Mandated projects count">
+      body=`<div class="bulk" title="Counted automatically: one per deal in this unit">
+        <b>${S.deals.length}</b>
         <small>signed mandates in market</small></div>`+items.map(chip).join("");
     }else{
       body=items.length?items.map(chip).join(""):`<div class="empty-col">Nothing here yet.</div>`;
@@ -1158,13 +1158,12 @@ function renderRail(){
     return `<section class="stage${stageFilter&&stageFilter!==s.id?" dim":""}">
       <header class="stage-cap" style="background:${s.color}" data-filter="${s.id}"
         title="${stageFilter===s.id?"Show all deals":"Show only "+esc(s.label)+" deals"}">
-        <span>${esc(s.label)}</span><span class="n">${s.id==="mandated"?S.mandated:items.length}</span>
+        <span>${esc(s.label)}</span><span class="n">${s.id==="mandated"?S.deals.length:items.length}</span>
       </header>
       <div class="stage-body" data-stage="${s.id}">${body}</div>
     </section>`;
   }).join("");
-  const mc=$("#mandCount");
-  if(mc && !RO()) mc.addEventListener("change",e=>{ S.mandated=Math.max(0,+e.target.value||0); save(); render(); });
+
 }
 function chip(d){
   return `<button class="chip" data-open="${d.id}" ${RO()?"":'draggable="true"'} data-drag-deal="${d.id}" style="--c:${SC[d.stage].color}">
@@ -1310,7 +1309,7 @@ const FY_STAGES=["dd"];
 function unitStats(u,s){
   const stageCounts=u.stages.map(st=>({st, n:s.deals.filter(d=>d.stage===st.id).length}));
   return {
-    deals:s.deals.length, closures:s.deals.filter(d=>d.stage==="closure").length, mandated:s.mandated,
+    deals:s.deals.length, closures:s.deals.filter(d=>d.stage==="closure").length, mandated:s.deals.length,   /* every deal is a signed mandate */
     active:s.deals.filter(d=>ACTIVE_STAGES.includes(d.stage)).length,
     fy:s.deals.filter(d=>FY_STAGES.includes(d.stage)).length,
     ev:s.deals.filter(d=>!EV_EXCLUDED.includes(d.stage)).reduce((a,d)=>a+num(d.ev),0),
