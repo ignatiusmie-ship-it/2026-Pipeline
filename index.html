@@ -1671,7 +1671,47 @@ function openDrawer(id){
   $("#f-ev").placeholder=U.currency+"25M";
   $("#drawer").classList.add("open"); $("#scrim").classList.add("on");
 }
-function closeDrawer(){ editing=null; $("#drawer").classList.remove("open"); $("#scrim").classList.remove("on"); }
+/* a deal opened with Add deal and closed with nothing filled in is discarded, not left as an empty row */
+const DEAL_TEXT=["project","buyer","status","start","ev","note"];
+function closeDrawer(){
+  const id=editing; editing=null; $("#drawer").classList.remove("open"); $("#scrim").classList.remove("on");
+  if(id && S && Array.isArray(S.deals)){
+    const d=S.deals.find(x=>x.id===id);
+    if(d && !DEAL_TEXT.some(f=>String(d[f]||"").trim())){ S.deals=S.deals.filter(x=>x!==d); render(); }
+  }
+}
+
+/* =====================================================================
+   EA WON → DEALS: a name that lands in EA won is added to Deals at Mandated,
+   unless that company is already a deal. "ProcessQ / Q3" → project ProcessQ, status "EA won / Q3".
+   ===================================================================== */
+const eaNorm=x=>String(x||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+function eaParts(text){
+  const t=String(text||"").trim(), i=t.indexOf("/");
+  return i<0 ? {company:t, rest:""} : {company:t.slice(0,i).trim(), rest:t.slice(i+1).trim()};
+}
+function dealForCompany(company){
+  const c=eaNorm(company); if(c.length<3) return null;
+  return S.deals.find(d=>d.fromEA===c) || S.deals.find(d=>eaNorm(d.project).includes(c)) || null;
+}
+function dealFromEAWon(text){
+  const {company,rest}=eaParts(text);
+  if(!company || dealForCompany(company)) return null;
+  const d={id:"d"+Date.now().toString(36)+Math.random().toString(36).slice(2,5), project:company, buyer:"",
+    stage:SC.mandated?"mandated":U.stages[0].id, status:rest?`EA won / ${rest}`:"EA won", start:"", ev:"", note:"",
+    fromEA:eaNorm(company)};
+  S.deals.push(d);
+  return d;
+}
+/* renaming an EA won entry renames the deal it created, rather than adding a second one */
+function renameDealFromEA(oldText,newText){
+  const o=eaParts(oldText), n=eaParts(newText), d=S.deals.find(x=>x.fromEA && x.fromEA===eaNorm(o.company));
+  if(!d || !n.company) return false;
+  if(d.project===o.company) d.project=n.company;
+  if(d.status===(o.rest?`EA won / ${o.rest}`:"EA won")) d.status=n.rest?`EA won / ${n.rest}`:"EA won";
+  d.fromEA=eaNorm(n.company);
+  return true;
+}
 
 /* =====================================================================
    DRAG & DROP
@@ -1762,7 +1802,15 @@ function wireOnce(){
       if(S.eaTitles[k]!==v){ S.eaTitles[k]=v; save(); }
     }else if(el.dataset.ea){
       const arr=S.ea[el.dataset.ea], i=+el.dataset.i;
-      if(arr && arr[i]!==v){ arr[i]=v; save(); renderEA(); }
+      if(arr && arr[i]!==v){
+        const old=arr[i]; arr[i]=v;
+        if(el.dataset.ea==="won" && v){
+          const renamed=old && renameDealFromEA(old,v);
+          const added=!renamed && dealFromEAWon(v);
+          save(); render();
+          if(added) toast(`${added.project} added to Deals at ${SC[added.stage].label}.`);
+        } else { save(); renderEA(); }
+      }
     }else if(el.dataset.meta){
       const k=el.dataset.meta;
       if(!v){ el.textContent=S[k]; return; }
@@ -1874,7 +1922,14 @@ function wireOnce(){
     e.preventDefault();
     if(drag.kind==="deal") moveDeal(drag.id,{beforeId:t.beforeId,stage:t.stage});
     else if(drag.kind==="sec") moveSection(drag.k,t.secBefore);
-    else moveEA(drag.list,drag.index,t.list,t.index);
+    else{
+      const moved=S.ea[drag.list][drag.index], into=t.list, from=drag.list;
+      moveEA(drag.list,drag.index,t.list,t.index);
+      if(into==="won" && from!=="won" && moved){
+        const added=dealFromEAWon(moved);
+        if(added) setTimeout(()=>toast(`${added.project} added to Deals at ${SC[added.stage].label}.`),0);
+      }
+    }
     drag=null; clearMarks(); save(); render();
   });
   document.addEventListener("dragend",()=>{
