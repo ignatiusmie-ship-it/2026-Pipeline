@@ -626,13 +626,13 @@ const COL_DEFAULTS = {idx:"#", project:"Project", buyer:"Buyer", stage:"Stage",
                       status:"Status / closure", start:"Start date", ev:"EV"};
 
 const UNITS = [
-  {id:"us",    label:"US",    folder:"US",    file:"pipeline-us-2026.json",    currency:"$", stages:BASE_STAGES,
+  {id:"us",    label:"US",    folder:"US",    file:"pipeline-us-2026.json",    currency:"$", stages:[...BASE_STAGES, TERMINATED],
    ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
-  {id:"uk",    label:"UK",    folder:"UK",    file:"pipeline-uk-2026.json",    currency:"€", stages:BASE_STAGES,
+  {id:"uk",    label:"UK",    folder:"UK",    file:"pipeline-uk-2026.json",    currency:"€", stages:[...BASE_STAGES, TERMINATED],
    ea:["won","sent","lost"], eaEdit:true,  eaDrag:true,  colEdit:false},
   {id:"saas",  label:"SaaS",  folder:"SaaS",  file:"pipeline-saas-2026.json",  currency:"$", stages:[...BASE_STAGES, TERMINATED],
    ea:["won","sent","lost"], eaEdit:false, eaDrag:false, colEdit:false},
-  {id:"india", label:"India", folder:"India", file:"pipeline-india-2026.json", currency:"$", stages:BASE_STAGES, buyers:false,
+  {id:"india", label:"India", folder:"India", file:"pipeline-india-2026.json", currency:"$", stages:[...BASE_STAGES, TERMINATED], buyers:false,
    ea:["won","sent","nda","yet","lost"], eaEdit:true, eaDrag:true, colEdit:true,
    cols:{buyer:"Transaction Type"}}
 ];
